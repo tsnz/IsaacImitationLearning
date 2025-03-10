@@ -1,0 +1,7 @@
+target-version = "py310"
+line-length = 120
+[lint]
+ignore = ["E402", "N812", "RET504", "C408"]
+extend-select = ["C4", "SIM", "TCH", "N", "R", "I"]
+[lint.pydocstyle]
+convention = "google"
