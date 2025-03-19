@@ -87,10 +87,10 @@ class ObservationsCfg:
 
         # joint_pos = ObsTerm(func=mdp.joint_pos_rel)
         # joint_vel = ObsTerm(func=mdp.joint_vel_rel)
-        object_position = ObsTerm(func=mdp.object_position_in_world_frame)
-        eef_pos = ObsTerm(func=mdp.ee_frame_pos)
-        eef_quat = ObsTerm(func=mdp.ee_frame_quat)
-        gripper_pos = ObsTerm(func=mdp.gripper_pos)
+        object_pos = ObsTerm(func=mdp.object_position_in_robot_root_frame)
+        robot0_eef_pos = ObsTerm(func=mdp.ee_frame_pos)
+        robot0_eef_quat = ObsTerm(func=mdp.ee_frame_quat)
+        robot0_gripper_qpos = ObsTerm(func=mdp.gripper_pos)
 
         def __post_init__(self):
             self.enable_corruption = False

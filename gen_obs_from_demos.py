@@ -181,6 +181,11 @@ def main():
 
     # reset before starting
     env.reset()
+    # perform a few actions to prevent lighting issues
+    # if 1st sim step is recorded, its unnaturally dark
+    dummy_action = torch.zeros(env.action_space.shape)
+    for i in range(5):
+        env.step(dummy_action)
     teleop_interface.reset()
 
     # simulate environment -- run everything in inference mode
