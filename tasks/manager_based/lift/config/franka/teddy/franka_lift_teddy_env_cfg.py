@@ -9,9 +9,9 @@ from isaaclab.sim.spawners.from_files.from_files_cfg import UsdFileCfg
 from isaaclab.utils import configclass
 from isaaclab.utils.assets import ISAACLAB_NUCLEUS_DIR
 
-from tasks.lift import mdp
 from utils.math import pi, quat_from_euler_xyz
 
+from .... import mdp
 from ..franka_lift_env_cfg import FrankaLiftEnvCfg
 
 
@@ -61,6 +61,10 @@ class FrankaLiftTeddyLowDimEnvCfg(FrankaLiftEnvCfg):
             },
         )
 
+        # Disable replicate physics as it doesn't work for deformable objects
+        # FIXME: This should be fixed by the PhysX replication system.
+        self.scene.replicate_physics = False
+
 
 @configclass
 class FrankaLiftTeddyEnvCfg(FrankaLiftTeddyLowDimEnvCfg):
@@ -69,57 +73,73 @@ class FrankaLiftTeddyEnvCfg(FrankaLiftTeddyLowDimEnvCfg):
         super().__post_init__()
 
         # create cameras
-        self.scene.front_camera = CameraCfg(
-            prim_path="{ENV_REGEX_NS}/Robot/front_camera",
-            update_period=0.1,
-            height=96,
-            width=96,
-            data_types=["distance_to_camera"],
-            spawn=sim_utils.PinholeCameraCfg(
-                focal_length=20.0,
-                focus_distance=400.0,
-                horizontal_aperture=20.955,
-                clipping_range=(0.1, 1.0e5),
-            ),
-            # rotate 180 on Y axis to look back at robot
-            offset=CameraCfg.OffsetCfg(pos=(1.7, 0.0, 0.250), rot=(0, 0, 0, 1), convention="world"),
-        )
-
-        self.scene.eef_camera = CameraCfg(
-            prim_path="{ENV_REGEX_NS}/Robot/panda_hand/eef_camera",
-            update_period=0.1,
-            height=96,
-            width=96,
-            data_types=["distance_to_camera"],
+        self.scene.agentview_camera = CameraCfg(
+            prim_path="{ENV_REGEX_NS}/Robot/agentview_camera",
+            height=128,
+            width=128,
+            data_types=["distance_to_camera", "rgb"],
             spawn=sim_utils.PinholeCameraCfg(
                 focal_length=24.0,
                 focus_distance=400.0,
                 horizontal_aperture=20.955,
-                clipping_range=(0.1, 1.0e5),
+            ),
+            # rotate 180 deg on Y axis to look back at robot and 35 deg down
+            offset=CameraCfg.OffsetCfg(pos=(1.2, 0.0, 0.6), rot=(0, -0.3007058, 0, 0.953717), convention="world"),
+        )
+
+        self.scene.eef_camera = CameraCfg(
+            prim_path="{ENV_REGEX_NS}/Robot/panda_hand/eef_camera",
+            height=128,
+            width=128,
+            data_types=["distance_to_camera", "rgb"],
+            spawn=sim_utils.FisheyeCameraCfg(
+                projection_type="fisheyeKannalaBrandtK3",
+                clipping_range=(0.001, 1.0e5),
+                horizontal_aperture=10.0,
             ),
             offset=CameraCfg.OffsetCfg(
-                pos=(0.0, 0.0, 0.0),
+                pos=(0.0, 0.0, 0.058),
                 rot=quat_from_euler_xyz(0, -pi / 2, pi),
                 convention="world",
             ),
         )
 
         # add cameras to obs
-        self.observations.policy.depth_front = ObsTerm(
+        self.observations.policy.agentview_depth = ObsTerm(
             func=mdp.image,
             params={
-                "sensor_cfg": SceneEntityCfg("front_camera"),
+                "sensor_cfg": SceneEntityCfg("agentview_camera"),
                 "data_type": "distance_to_camera",
+                "convert_perspective_to_orthogonal": False,
+                "normalize": True,
+            },
+        )
+        self.observations.policy.agentview_image = ObsTerm(
+            func=mdp.image,
+            params={
+                "sensor_cfg": SceneEntityCfg("agentview_camera"),
+                "data_type": "rgb",
                 "convert_perspective_to_orthogonal": False,
                 "normalize": False,
             },
         )
-        self.observations.policy.depth_eef = ObsTerm(
+        self.observations.policy.robot0_eef_depth = ObsTerm(
             func=mdp.image,
             params={
                 "sensor_cfg": SceneEntityCfg("eef_camera"),
                 "data_type": "distance_to_camera",
                 "convert_perspective_to_orthogonal": False,
+                "normalize": True,
+            },
+        )
+        self.observations.policy.robot0_eef_image = ObsTerm(
+            func=mdp.image,
+            params={
+                "sensor_cfg": SceneEntityCfg("eef_camera"),
+                "data_type": "rgb",
+                "convert_perspective_to_orthogonal": False,
                 "normalize": False,
             },
         )
+
+        self.rerender_on_reset = True

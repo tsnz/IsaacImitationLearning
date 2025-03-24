@@ -1,11 +1,9 @@
-# import isaaclab.envs.mdp as mdp
 from isaaclab.controllers.differential_ik_cfg import DifferentialIKControllerCfg
 from isaaclab.envs.mdp.actions.actions_cfg import DifferentialInverseKinematicsActionCfg
 from isaaclab.sensors.frame_transformer.frame_transformer_cfg import FrameTransformerCfg, OffsetCfg
 from isaaclab.utils import configclass
 
-from tasks.lift import mdp
-
+from ... import mdp
 from ...lift_env_cfg import LiftEnvCfg
 
 ##
@@ -22,7 +20,7 @@ class FrankaLiftEnvCfg(LiftEnvCfg):
         super().__post_init__()
 
         # Set Franka as robot
-        # We switch here to a stiffer PD controller for IK tracking to be better.
+        # Use a stiffer PD controller for IK tracking to be better
         self.scene.robot = FRANKA_PANDA_HIGH_PD_CFG.replace(prim_path="{ENV_REGEX_NS}/Robot")
 
         # Set actions for the specific robot type (franka)

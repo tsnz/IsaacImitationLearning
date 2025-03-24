@@ -9,9 +9,9 @@ from isaaclab.sim.spawners.from_files.from_files_cfg import UsdFileCfg
 from isaaclab.utils import configclass
 from isaaclab.utils.assets import ISAAC_NUCLEUS_DIR
 
-from tasks.lift import mdp
 from utils.math import pi, quat_from_euler_xyz
 
+from .... import mdp
 from ..franka_lift_env_cfg import FrankaLiftEnvCfg
 
 
@@ -80,8 +80,8 @@ class FrankaLiftCubeEnvCfg(FrankaLiftCubeLowDimEnvCfg):
                 focus_distance=400.0,
                 horizontal_aperture=20.955,
             ),
-            # rotate 180 deg on Y axis to look back at robot and 10 deg down
-            offset=CameraCfg.OffsetCfg(pos=(1.4, 0.0, 0.5), rot=(0, -0.2164396, 0, 0.976296), convention="world"),
+            # rotate 180 deg on Y axis to look back at robot and 35 deg down
+            offset=CameraCfg.OffsetCfg(pos=(1.2, 0.0, 0.6), rot=(0, -0.3007058, 0, 0.953717), convention="world"),
         )
 
         self.scene.eef_camera = CameraCfg(
@@ -89,14 +89,14 @@ class FrankaLiftCubeEnvCfg(FrankaLiftCubeLowDimEnvCfg):
             height=128,
             width=128,
             data_types=["distance_to_camera", "rgb"],
-            spawn=sim_utils.PinholeCameraCfg(
-                focal_length=24.0,
-                focus_distance=400.0,
-                horizontal_aperture=20.955,
-                clipping_range=(0.01, 1.0e5),
+            # spawn=sim_utils.PinholeCameraCfg(
+            spawn=sim_utils.FisheyeCameraCfg(
+                projection_type="fisheyeKannalaBrandtK3",
+                clipping_range=(0.001, 1.0e5),
+                horizontal_aperture=10.0,
             ),
             offset=CameraCfg.OffsetCfg(
-                pos=(0.0, 0.0, 0.05),
+                pos=(0.0, 0.0, 0.058),
                 rot=quat_from_euler_xyz(0, -pi / 2, pi),
                 convention="world",
             ),
@@ -139,4 +139,5 @@ class FrankaLiftCubeEnvCfg(FrankaLiftCubeLowDimEnvCfg):
                 "normalize": False,
             },
         )
+
         self.rerender_on_reset = True
