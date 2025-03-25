@@ -1,4 +1,5 @@
 import isaaclab.sim as sim_utils
+import numpy as np
 from isaaclab.assets import RigidObjectCfg
 from isaaclab.managers import EventTermCfg as EventTerm
 from isaaclab.managers import ObservationTermCfg as ObsTerm
@@ -8,8 +9,7 @@ from isaaclab.sim.schemas.schemas_cfg import RigidBodyPropertiesCfg
 from isaaclab.sim.spawners.from_files.from_files_cfg import UsdFileCfg
 from isaaclab.utils import configclass
 from isaaclab.utils.assets import ISAAC_NUCLEUS_DIR
-
-from utils.math import pi, quat_from_euler_xyz
+from isaacsim.core.utils.rotations import euler_angles_to_quat
 
 from .... import mdp
 from ..franka_lift_env_cfg import FrankaLiftEnvCfg
@@ -97,7 +97,7 @@ class FrankaLiftCubeEnvCfg(FrankaLiftCubeLowDimEnvCfg):
             ),
             offset=CameraCfg.OffsetCfg(
                 pos=(0.0, 0.0, 0.058),
-                rot=quat_from_euler_xyz(0, -pi / 2, pi),
+                rot=euler_angles_to_quat(np.asarray(0, -90, 180), True),
                 convention="world",
             ),
         )

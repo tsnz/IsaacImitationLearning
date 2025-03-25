@@ -2,9 +2,8 @@ from collections.abc import Callable
 
 import numpy as np
 from isaaclab.devices import DeviceBase
+from isaacsim.core.utils.rotations import quat_to_euler_angles
 from simpub.xr_device.meta_quest3 import MetaQuest3
-
-from utils.math import euler_xyz_from_quat, quat_mul_np
 
 
 class Se3SimPubHandTracking(DeviceBase):
@@ -71,42 +70,6 @@ class Se3SimPubHandTracking(DeviceBase):
         self._lock_rot = not self._lock_rot
 
 
-class Se3SimPubHandTrackingAbs(Se3SimPubHandTracking):
-    def __init__(self, device_name="ALRMetaQuest3", hand="right"):
-        super().__init__(device_name, hand)
-        # somewhat plausible start pos
-        self._start_pos = np.array([0.5, 0, 0.3])
-        self._start_rot = np.array([0, 1, 0, 0])
-        self._pos = self._start_pos
-        self._rot = self._start_rot
-
-    def advance(self) -> tuple[np.ndarray, bool]:
-        """Provides the joystick event state.
-        Returns:
-            The processed output form the joystick.
-        """
-        input_data = self.meta_quest3.get_input_data()
-
-        if input_data is not None and self._tracking_active:
-            self._pos = input_data[self.hand]["pos"]
-            self._rot = input_data[self.hand]["rot"]
-
-            # rotate x axis 180 deg to align controller with eef
-            self._rot = quat_mul_np(np.asarray(self._rot), np.asarray([0, 1, 0, 0]))
-
-        return np.concatenate([self._pos, self._rot]), self._close_gripper
-
-    def set_start_pose(self, start_pos, start_rot):
-        self._start_pos = start_pos
-        self._start_rot = start_rot
-
-    def reset(self):
-        """Reset the internals."""
-        super().reset()
-        self._pos = self._start_pos
-        self._rot = self._start_rot
-
-
 class Se3SimPubHandTrackingRel(Se3SimPubHandTracking):
     def __init__(
         self,
@@ -133,7 +96,7 @@ class Se3SimPubHandTrackingRel(Se3SimPubHandTracking):
         d_pos = np.zeros(3)
 
         if input_data is not None:
-            cur_rot = euler_xyz_from_quat(np.asarray(input_data[self.hand]["rot"]))
+            cur_rot = quat_to_euler_angles(np.asarray(input_data[self.hand]["rot"]))
             if self._tracking_active:
                 # calculate position difference
                 d_pos = np.asarray(input_data[self.hand]["pos"]) - self._pos
