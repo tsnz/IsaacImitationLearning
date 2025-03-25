@@ -1,4 +1,4 @@
-#from . import lift  # noqa: F401
+import isaaclab_tasks  # noqa: F401
 
 from .utils import import_packages
 
