@@ -99,7 +99,7 @@ class FrankaLiftTeddyEnvCfg(FrankaLiftTeddyLowDimEnvCfg):
             ),
             offset=CameraCfg.OffsetCfg(
                 pos=(0.0, 0.0, 0.058),
-                rot=euler_angles_to_quat(np.asarray(0, -90, 180), True),
+                rot=euler_angles_to_quat(np.asarray([0, -90, 180]), True),
                 convention="world",
             ),
         )
