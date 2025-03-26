@@ -102,10 +102,7 @@ from isaaclab_tasks.utils.parse_cfg import parse_env_cfg
 from simpub.sim.isaacsim_publisher import IsaacSimPublisher
 
 import tasks  # noqa: F401
-from devices.SimPub.se3_SimPubHandTracking import (
-    Se3SimPubHandTrackingAbs,
-    Se3SimPubHandTrackingRel,
-)
+from devices.SimPub.se3_SimPubHandTracking import Se3SimPubHandTrackingRel
 
 
 class RateLimiter:
@@ -237,9 +234,6 @@ def main():
         ViewportCameraController(env, viewer)
     elif args_cli.teleop_device.lower() == "simpub":
         teleop_interface = Se3SimPubHandTrackingRel()
-        teleop_interface.add_callback("Y", reset_recording_instance)
-    elif args_cli.teleop_device.lower() == "simpub_abs":
-        teleop_interface = Se3SimPubHandTrackingAbs()
         teleop_interface.add_callback("Y", reset_recording_instance)
     else:
         raise ValueError(

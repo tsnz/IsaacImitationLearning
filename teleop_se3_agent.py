@@ -73,10 +73,7 @@ from isaaclab_tasks.utils import parse_env_cfg
 from simpub.sim.isaacsim_publisher import IsaacSimPublisher
 
 import tasks  # noqa: F401
-from devices.SimPub.se3_SimPubHandTracking import (
-    Se3SimPubHandTrackingAbs,
-    Se3SimPubHandTrackingRel,
-)
+from devices.SimPub.se3_SimPubHandTracking import Se3SimPubHandTrackingRel
 
 
 def pre_process_actions(delta_pose: torch.Tensor, gripper_command: bool) -> torch.Tensor:
@@ -157,9 +154,6 @@ def main():
         ViewportCameraController(env, viewer)
     elif args_cli.teleop_device.lower() == "simpub":
         teleop_interface = Se3SimPubHandTrackingRel()
-        teleop_interface.add_callback("Y", reset_recording_instance)
-    elif args_cli.teleop_device.lower() == "simpub_abs":
-        teleop_interface = Se3SimPubHandTrackingAbs()
         teleop_interface.add_callback("Y", reset_recording_instance)
     else:
         raise ValueError(
