@@ -49,13 +49,16 @@ class ObjectTableBinSceneCfg(InteractiveSceneCfg):
     table = AssetBaseCfg(
         prim_path="{ENV_REGEX_NS}/Table",
         init_state=AssetBaseCfg.InitialStateCfg(pos=[0.5, 0, 0], rot=[0.707, 0, 0, 0.707]),
-        spawn=UsdFileCfg(usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/Mounts/SeattleLabTable/table_instanceable.usd"),
+        spawn=UsdFileCfg(
+            usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/Mounts/SeattleLabTable/table_instanceable.usd",
+            scale=(1.1, 1.0, 1.0),
+        ),
     )
 
     # bin
     bin = RigidObjectCfg(
         prim_path="{ENV_REGEX_NS}/Bin",
-        init_state=RigidObjectCfg.InitialStateCfg(pos=[0.25, 0.35, 0.1], rot=[0.707, 0, 0, 0.707]),
+        init_state=RigidObjectCfg.InitialStateCfg(pos=[0.4, 0.35, 0.072], rot=[0.707, 0, 0, 0.707]),
         spawn=UsdFileCfg(
             usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/KLT_Bin/small_KLT.usd",
             rigid_props=RigidBodyPropertiesCfg(
@@ -145,12 +148,12 @@ class TerminationsCfg:
         func=mdp.root_height_below_minimum,
         params={"minimum_height": -0.05, "asset_cfg": SceneEntityCfg("object")},
     )
-    object_dropping = DoneTerm(
+    bin_dropping = DoneTerm(
         func=mdp.root_height_below_minimum,
         params={"minimum_height": -0.05, "asset_cfg": SceneEntityCfg("bin")},
     )
     success = DoneTerm(
-        func=mdp.object_in_bin, params={"finish_range": {"x": (-0.02, 0.02), "y": (-0.02, 0.02), "z": (-0.06, 0.05)}}
+        func=mdp.object_in_bin, params={"finish_range": {"x": (-0.04, 0.04), "y": (-0.06, 0.06), "z": (-0.1, 0.1)}}
     )
 
 

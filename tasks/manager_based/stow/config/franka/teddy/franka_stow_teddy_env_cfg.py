@@ -40,7 +40,7 @@ class FrankaStowTeddyLowDimEnvCfg(FrankaStowEnvCfg):
             spawn=UsdFileCfg(
                 usd_path=f"{ISAACLAB_NUCLEUS_DIR}/Objects/Teddy_Bear/teddy_bear.usd",
                 scale=(0.01, 0.01, 0.01),
-                deformable_props=DeformableBodyPropertiesCfg(solver_position_iteration_count=100),
+                deformable_props=DeformableBodyPropertiesCfg(solver_position_iteration_count=128),
             ),
         )
 
@@ -54,7 +54,7 @@ class FrankaStowTeddyLowDimEnvCfg(FrankaStowEnvCfg):
             func=mdp.reset_nodal_state_uniform,
             mode="reset",
             params={
-                "position_range": {"x": (-0.1, 0.1), "y": (-0.1, 0.1), "z": (0.0, 0.0)},
+                "position_range": {"x": (-0.1, 0.08), "y": (-0.1, 0.1), "z": (0.0, 0.0)},
                 "velocity_range": {},
                 "asset_cfg": SceneEntityCfg("object"),
             },
