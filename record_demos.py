@@ -64,12 +64,6 @@ parser.add_argument(
     default=False,
     help="Enable SimPub.",
 )
-parser.add_argument(
-    "--lowdim",
-    action="store_true",
-    default=False,
-    help="Only capture low dim observations to improve performance.",
-)
 # append AppLauncher cli args
 AppLauncher.add_app_launcher_args(parser)
 # parse the arguments
@@ -161,8 +155,7 @@ def main():
         os.makedirs(output_dir)
 
     # parse configuration
-    env_id = args_cli.task if not args_cli.lowdim else args_cli.task + "-LowDim"
-    env_cfg = parse_env_cfg(task_name=env_id, device=args_cli.device, num_envs=1)
+    env_cfg = parse_env_cfg(task_name=args_cli.task, device=args_cli.device, num_envs=1)
     env_cfg.env_name = args_cli.task
 
     # extract success checking function to invoke in the main loop
@@ -181,9 +174,6 @@ def main():
     env_cfg.terminations.time_out = None
 
     env_cfg.observations.policy.concatenate_terms = False
-    # disable camera if using lowdim option
-    # if args_cli.lowdim:
-    #     env_cfg.make_lowdim_only()
 
     env_cfg.recorders = ActionStateRecorderManagerCfg()
     env_cfg.recorders.dataset_export_dir_path = output_dir
