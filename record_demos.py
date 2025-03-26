@@ -265,9 +265,8 @@ def main():
                     success_step_count = 0
 
             if should_reset_recording_instance:
-                env.reset()
                 env.recorder_manager.reset()
-                # teleop_interface.reset()
+                env.reset()
                 should_reset_recording_instance = False
                 success_step_count = 0
 
