@@ -35,14 +35,12 @@ parser.add_argument(
     default=False,
     help="Enable SimPub.",
 )
-parser.add_argument("--draw_camera", type=str, default=None, help="Draw depth info for given camera.")
+parser.add_argument("--step_hz", type=int, default=30, help="Environment stepping rate in Hz.")
 
 # append AppLauncher cli args
 AppLauncher.add_app_launcher_args(parser)
 # parse the arguments
 args_cli = parser.parse_args()
-# TODO: fix
-args_cli.draw = False
 app_launcher_args = vars(args_cli)
 
 if args_cli.teleop_device.lower() == "handtracking":
@@ -57,6 +55,7 @@ simulation_app = app_launcher.app
 
 """Rest everything follows."""
 
+import time
 
 import gymnasium as gym
 import omni.log  # noqa: F401
@@ -65,10 +64,6 @@ from isaaclab.devices import Se3Gamepad, Se3HandTracking, Se3Keyboard, Se3SpaceM
 from isaaclab.envs import ViewerCfg
 from isaaclab.envs.ui import ViewportCameraController
 from isaaclab.managers import EventTermCfg as EventTerm
-from isaaclab.markers import VisualizationMarkers
-from isaaclab.markers.config import RAY_CASTER_MARKER_CFG
-from isaaclab.sensors.camera.utils import create_pointcloud_from_depth
-from isaaclab.sim import SimulationContext
 from isaaclab_tasks.utils import parse_env_cfg
 from simpub.sim.isaacsim_publisher import IsaacSimPublisher
 
@@ -85,8 +80,44 @@ def pre_process_actions(delta_pose: torch.Tensor, gripper_command: bool) -> torc
     return torch.concat([delta_pose, gripper_vel], dim=1)
 
 
+class RateLimiter:
+    """Convenience class for enforcing rates in loops."""
+
+    def __init__(self, hz):
+        """
+        Args:
+            hz (int): frequency to enforce
+        """
+        self.hz = hz
+        self.last_time = time.time()
+        self.sleep_duration = 1.0 / hz
+        self.render_period = min(0.033, self.sleep_duration)
+
+    def sleep(self, env):
+        """Attempt to sleep at the specified rate in hz."""
+        next_wakeup_time = self.last_time + self.sleep_duration
+        while time.time() < next_wakeup_time:
+            time.sleep(self.render_period)
+            env.sim.render()
+
+        self.last_time = self.last_time + self.sleep_duration
+
+        # detect time jumping forwards (e.g. loop is too slow)
+        if self.last_time < time.time():
+            while self.last_time < time.time():
+                self.last_time += self.sleep_duration
+
+
 def main():
     """Running keyboard teleoperation with Isaac Lab manipulation environment."""
+
+    # if handtracking is selected, rate limiting is achieved via OpenXR
+    rate_limiter = (
+        None
+        if args_cli.teleop_device.lower() == "handtracking" or args_cli.step_hz == 0
+        else RateLimiter(args_cli.step_hz)
+    )
+
     # parse configuration
     env_cfg = parse_env_cfg(
         task_name=args_cli.task,
@@ -165,13 +196,6 @@ def main():
     # reset environment
     env.reset()
 
-    if SimulationContext.instance().has_gui() and args_cli.draw_camera is not None:
-        cfg = RAY_CASTER_MARKER_CFG.replace(prim_path="/Visuals/CameraPointCloud")
-        cfg.markers["hit"].radius = 0.002
-        pc_markers = VisualizationMarkers(cfg)
-
-        camera = env.scene[args_cli.draw_camera]
-
     # simulate environment
     while simulation_app.is_running():
         # run everything in inference mode
@@ -185,41 +209,15 @@ def main():
             # pre-process actions
             actions = pre_process_actions(delta_pose, gripper_command)
 
-            # debug
-            # env.scene['target'].write_root_pose_to_sim(delta_pose[0])
-            # cur_pos = env.scene["target"].data.root_pos_w
-            # cur_pos += delta_pose[0][0:3]
-            # env.scene["target"].write_root_pose_to_sim(
-            #     torch.cat([cur_pos[0], env.scene["target"].data.root_quat_w[0]])
-            # )
-            # env.scene["target"].reset()
-
             # apply actions
             env.step(actions)
-
-            if (
-                SimulationContext.instance().has_gui()
-                and args_cli.draw_camera is not None
-                and "distance_to_camera" in camera.data.output
-            ):
-                # Derive pointcloud from camera at camera_index
-                pointcloud = create_pointcloud_from_depth(
-                    intrinsic_matrix=camera.data.intrinsic_matrices[0],
-                    depth=camera.data.output["distance_to_camera"][0],
-                    position=camera.data.pos_w[0],
-                    orientation=camera.data.quat_w_ros[0],
-                    device=SimulationContext.instance().device,
-                )
-
-                # In the first few steps, things are still being instanced and Camera.data
-                # can be empty. If we attempt to visualize an empty pointcloud it will crash
-                # the sim, so we check that the pointcloud is not empty.
-                if pointcloud.size()[0] > 0:
-                    pc_markers.visualize(translations=pointcloud)
 
             if should_reset_recording_instance:
                 env.reset()
                 should_reset_recording_instance = False
+
+            if rate_limiter:
+                rate_limiter.sleep(env)
 
     # close the simulator
     env.close()
