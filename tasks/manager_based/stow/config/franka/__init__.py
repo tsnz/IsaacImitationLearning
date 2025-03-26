@@ -12,6 +12,6 @@ gym.register(
 gym.register(
     id="IIL-Stow-Teddy-v0",
     entry_point="isaaclab.envs:ManagerBasedRLEnv",
-    kwargs={"env_cfg_entry_point": franka_stow_teddy_env_cfg.FrankaStowEnvCfg},
+    kwargs={"env_cfg_entry_point": franka_stow_teddy_env_cfg.FrankaStowTeddyEnvCfg},
     disable_env_checker=True,
 )
