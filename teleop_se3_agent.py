@@ -3,7 +3,7 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-"""Script to run a keyboard teleoperation with Isaac Lab manipulation environments."""
+"""Script to run teleoperation with Isaac Lab manipulation environments."""
 
 """Launch Isaac Sim Simulator first."""
 
@@ -14,7 +14,7 @@ from isaaclab.app import AppLauncher
 
 # add argparse arguments
 parser = argparse.ArgumentParser(description="Keyboard teleoperation for Isaac Lab environments.")
-parser.add_argument("--task", type=str, default="IIL-Lift-Cube-v0", help="Name of the task.")
+parser.add_argument("--task", type=str, default="IIL-Lift-Cube-v0-LowDim", help="Name of the task.")
 parser.add_argument(
     "--disable_fabric",
     action="store_true",
@@ -128,9 +128,6 @@ def main():
 
     # modify configuration
 
-    # make lowdim to improve performance
-    # env_cfg.make_lowdim_only()
-
     # remove timeout
     env_cfg.terminations.time_out = None
 
@@ -184,11 +181,12 @@ def main():
         viewer = ViewerCfg(eye=(-0.25, -0.3, 0.5), lookat=(0.6, 0, 0), asset_name="viewer")
         ViewportCameraController(env, viewer)
     elif args_cli.teleop_device.lower() == "simpub":
+        # TODO: Consider decimation for sensitivity
         teleop_interface = Se3SimPubHandTrackingRel()
         teleop_interface.add_callback("Y", reset_recording_instance)
     else:
         raise ValueError(
-            f"Invalid device interface '{args_cli.teleop_device}'. Supported: 'keyboard', 'spacemouse''handtracking'."
+            f"Invalid device interface '{args_cli.teleop_device}'. Supported: 'keyboard', 'spacemouse', 'handtracking', 'gamepad', 'simpub'."
         )
 
     print(teleop_interface)
@@ -210,6 +208,7 @@ def main():
             actions = pre_process_actions(delta_pose, gripper_command)
 
             # apply actions
+            # TODO: Support for envs not using full range of SE3 input
             env.step(actions)
 
             if should_reset_recording_instance:

@@ -158,9 +158,6 @@ def main():
     env_cfg.terminations.time_out = None
 
     env_cfg.observations.policy.concatenate_terms = False
-    # disable camera if using lowdim option
-    # if args_cli.lowdim:
-    #     env_cfg.make_lowdim_only()
 
     env_cfg.recorders = ActionStateRecorderManagerCfg()
     env_cfg.recorders.dataset_export_dir_path = output_dir
@@ -184,7 +181,7 @@ def main():
     # perform a few actions to prevent lighting issues
     # if 1st sim step is recorded, its unnaturally dark
     dummy_action = torch.zeros(env.action_space.shape)
-    for i in range(5):
+    for i in range(3):
         env.step(dummy_action)
     teleop_interface.reset()
 

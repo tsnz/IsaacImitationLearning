@@ -23,14 +23,13 @@ try:
     import isaaclab
     isaaclab_dir = pathlib.Path(isaaclab.__file__).parents[3]
 except Exception as e:
-    print("Error while importing IsaaacLab")
+    print("Error while importing Isaac Lab")
     print(e)
     print("Aborting")
     sys.exit(0)
 
 ISAACLAB_DIR = isaaclab_dir
 """Path to the Isaac Lab directory."""
-print(ISAACLAB_DIR)
 
 try:
     import isaacsim  # noqa: F401

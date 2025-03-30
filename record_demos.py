@@ -9,17 +9,6 @@ Script to record demonstrations with Isaac Lab environments using human teleoper
 This script allows users to record demonstrations operated by human teleoperation for a specified task.
 The recorded demonstrations are stored as episodes in a hdf5 file. Users can specify the task, teleoperation
 device, dataset directory, and environment stepping rate through command-line arguments.
-
-required arguments:
-    --task                    Name of the task.
-
-optional arguments:
-    -h, --help                Show this help message and exit
-    --teleop_device           Device for interacting with environment. (default: keyboard)
-    --dataset_file            File path to export recorded demos. (default: "./datasets/dataset.hdf5")
-    --step_hz                 Environment stepping rate in Hz. (default: 30)
-    --num_demos               Number of demonstrations to record. (default: 0)
-    --num_success_steps       Number of continuous steps with task success for concluding a demo as successful. (default: 10)
 """
 
 """Launch Isaac Sim Simulator first."""
@@ -31,7 +20,7 @@ from isaaclab.app import AppLauncher
 
 # add argparse arguments
 parser = argparse.ArgumentParser(description="Record demonstrations for Isaac Lab environments.")
-parser.add_argument("--task", type=str, default="IIL-Lift-Cube-v0", help="Name of the task.")
+parser.add_argument("--task", type=str, default="IIL-Lift-Cube-v0-LowDim", help="Name of the task.")
 parser.add_argument(
     "--teleop_device",
     type=str,
@@ -223,11 +212,12 @@ def main():
         viewer = ViewerCfg(eye=(-0.25, -0.3, 0.5), lookat=(0.6, 0, 0), asset_name="viewer")
         ViewportCameraController(env, viewer)
     elif args_cli.teleop_device.lower() == "simpub":
+        # TODO: Consider decimation for sensitivity
         teleop_interface = Se3SimPubHandTrackingRel()
         teleop_interface.add_callback("Y", reset_recording_instance)
     else:
         raise ValueError(
-            f"Invalid device interface '{args_cli.teleop_device}'. Supported: 'keyboard', 'spacemouse', 'handtracking'."
+            f"Invalid device interface '{args_cli.teleop_device}'. Supported: 'keyboard', 'spacemouse', 'handtracking', 'gamepad', 'simpub'."
         )
 
     print(teleop_interface)
@@ -248,6 +238,7 @@ def main():
             actions = pre_process_actions(delta_pose, gripper_command)
 
             # perform action on environment
+            # TODO: Support for envs not using full range of SE3 input
             env.step(actions)
 
             if success_term is not None:
