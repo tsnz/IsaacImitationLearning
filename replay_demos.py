@@ -35,6 +35,7 @@ parser.add_argument(
         " --num_envs is 1."
     ),
 )
+parser.add_argument("--step_hz", type=int, default=30, help="Environment stepping rate in Hz.")
 
 # append AppLauncher cli args
 AppLauncher.add_app_launcher_args(parser)
@@ -49,6 +50,7 @@ simulation_app = app_launcher.app
 
 import contextlib
 import os
+import time
 
 import gymnasium as gym
 import torch
@@ -99,6 +101,34 @@ def compare_states(state_from_dataset, runtime_state, runtime_env_index) -> Tupl
                         output_log += f"\t  Dataset:\t{dataset_asset_state[i]}\r\n"
                         output_log += f"\t  Runtime: \t{runtime_asset_state[i]}\r\n"
     return states_matched, output_log
+
+
+class RateLimiter:
+    """Convenience class for enforcing rates in loops."""
+
+    def __init__(self, hz):
+        """
+        Args:
+            hz (int): frequency to enforce
+        """
+        self.hz = hz
+        self.last_time = time.time()
+        self.sleep_duration = 1.0 / hz
+        self.render_period = min(0.033, self.sleep_duration)
+
+    def sleep(self, env):
+        """Attempt to sleep at the specified rate in hz."""
+        next_wakeup_time = self.last_time + self.sleep_duration
+        while time.time() < next_wakeup_time:
+            time.sleep(self.render_period)
+            env.sim.render()
+
+        self.last_time = self.last_time + self.sleep_duration
+
+        # detect time jumping forwards (e.g. loop is too slow)
+        if self.last_time < time.time():
+            while self.last_time < time.time():
+                self.last_time += self.sleep_duration
 
 
 def main():
@@ -152,6 +182,8 @@ def main():
     # reset before starting
     env.reset()
     teleop_interface.reset()
+
+    rate_limiter = None if args_cli.step_hz == 0 else RateLimiter(args_cli.step_hz)
 
     # simulate environment -- run everything in inference mode
     episode_names = list(dataset_file_handler.get_episode_names())
@@ -215,6 +247,9 @@ def main():
                         else:
                             print("\t- mismatched.")
                             print(comparison_log)
+
+                if rate_limiter:
+                    rate_limiter.sleep(env)
             break
     # Close environment after replay in complete
     plural_trailing_s = "s" if replayed_episode_count > 1 else ""
