@@ -196,7 +196,7 @@ def main():
 
     # copy the launch.json file if it doesn't exist
     isaaclab_vscode_launch_filename = os.path.join(IIL_DIR, ".vscode", "launch.json")
-    isaaclab_vscode_template_launch_filename = os.path.join(ISAACLAB_DIR, ".vscode", "tools", "launch.template.json")
+    isaaclab_vscode_template_launch_filename = os.path.join(IIL_DIR, ".vscode", "tools", "launch.template.json")
     if not os.path.exists(isaaclab_vscode_launch_filename):
         # read template launch settings
         with open(isaaclab_vscode_template_launch_filename) as f:
