@@ -5,7 +5,7 @@ from isaaclab.managers import EventTermCfg as EventTerm
 from isaaclab.managers import ObservationTermCfg as ObsTerm
 from isaaclab.managers import SceneEntityCfg
 from isaaclab.sensors import CameraCfg
-from isaaclab.sim.schemas.schemas_cfg import DeformableBodyPropertiesCfg, MassPropertiesCfg
+from isaaclab.sim.schemas.schemas_cfg import DeformableBodyPropertiesCfg
 from isaaclab.sim.spawners.from_files.from_files_cfg import UsdFileCfg
 from isaaclab.utils import configclass
 from isaaclab.utils.assets import ISAACLAB_NUCLEUS_DIR
@@ -41,7 +41,6 @@ class FrankaLiftTeddyLowDimEnvCfg(FrankaLiftEnvCfg):
                 usd_path=f"{ISAACLAB_NUCLEUS_DIR}/Objects/Teddy_Bear/teddy_bear.usd",
                 scale=(0.01, 0.01, 0.01),
                 deformable_props=DeformableBodyPropertiesCfg(solver_position_iteration_count=32),
-                # mass_props=MassPropertiesCfg(mass=0.2),
             ),
         )
 
@@ -83,7 +82,7 @@ class FrankaLiftTeddyEnvCfg(FrankaLiftTeddyLowDimEnvCfg):
                 focus_distance=400.0,
                 horizontal_aperture=20.955,
             ),
-            # rotate 180 deg on Y axis to look back at robot and 35 deg down
+            # w.r.t. parent frame rotate Z (up) 180 deg and y -35 deg to look down at table
             offset=CameraCfg.OffsetCfg(pos=(1.2, 0.0, 0.6), rot=(0, -0.3007058, 0, 0.953717), convention="world"),
         )
 

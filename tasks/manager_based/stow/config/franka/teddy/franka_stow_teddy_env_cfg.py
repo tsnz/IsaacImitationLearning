@@ -82,7 +82,7 @@ class FrankaStowTeddyEnvCfg(FrankaStowTeddyLowDimEnvCfg):
                 focus_distance=400.0,
                 horizontal_aperture=20.955,
             ),
-            # rotate 180 deg on Y axis to look back at robot and 35 deg down
+            # w.r.t. parent frame rotate Z (up) 180 deg and y -35 deg to look down at table
             offset=CameraCfg.OffsetCfg(pos=(1.2, 0.0, 0.6), rot=(0, -0.3007058, 0, 0.953717), convention="world"),
         )
 
