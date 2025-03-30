@@ -1,6 +1,15 @@
-*.pyc
+# Python
+**/__pycache__/
+**/*.pyc
 
-.vscode/
+# VS Code
+.vscode/*
+# Include VS Code setup tools in repo
+!.vscode/tasks.json
+!.vscode/tools/
 
+# Outputs
 logs/
 datasets/
+data/
+wandb/
