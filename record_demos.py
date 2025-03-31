@@ -82,10 +82,14 @@ from isaaclab.envs.mdp.recorders.recorders_cfg import ActionStateRecorderManager
 from isaaclab.envs.ui import ViewportCameraController
 from isaaclab.managers import EventTermCfg as EventTerm
 from isaaclab_tasks.utils.parse_cfg import parse_env_cfg
-from simpub.sim.isaacsim_publisher import IsaacSimPublisher
 
 import isaac_imitation_learning.tasks  # noqa: F401
-from isaac_imitation_learning.devices.SimPub.se3_SimPubHandTracking import Se3SimPubHandTrackingRel
+
+# only import simpub if needed, so user is not forced to install it
+if args_cli.simpub:
+    from simpub.sim.isaacsim_publisher import IsaacSimPublisher
+
+    from isaac_imitation_learning.devices.SimPub.se3_SimPubHandTracking import Se3SimPubHandTrackingRel
 
 
 class RateLimiter:
