@@ -31,10 +31,10 @@ topk:
   format_str: 'epoch={epoch:04d}-mean_score={mean_score:.3f}.ckpt'
 
 env_runner:
-  _target_: robodiff.env_runner.isaac_lab_multi_env_image_runner.IsaacLabMultiEnvImageRunner
+  _target_: isaac_imitation_learning.robodiff.env_runner.isaac_lab_multi_env_image_runner.IsaacLabMultiEnvImageRunner
   env_wrapper:
     _partial_: True
-    _target_: robodiff.utils.isaac_lab_image_wrapper.IsaacLabImageWrapper
+    _target_: isaac_imitation_learning.robodiff.utils.isaac_lab_image_wrapper.IsaacLabImageWrapper
     env: null
     shape_meta: *shape_meta  
   isaac_args: ${isaac}

@@ -4,12 +4,6 @@ Training:
 python train.py --config-name=train_diffusion_lowdim_workspace
 """
 
-# threadpoolctl
-# imagecodecs
-
-# sim pub
-# tabulate
-
 import sys
 
 # use line-buffering for both stdout and stderr
@@ -43,6 +37,8 @@ def main(cfg: OmegaConf):
 if __name__ == "__main__":
     try:
         main()
+    except Exception as e:
+        print(e)
     finally:
         # shut down IsaacLab if it is running
         try:

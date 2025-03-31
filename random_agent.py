@@ -33,7 +33,7 @@ import gymnasium as gym
 import torch
 from isaaclab_tasks.utils import parse_env_cfg
 
-import tasks  # noqa: F401
+import isaac_imitation_learning.tasks  # noqa: F401
 
 
 def main():

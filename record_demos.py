@@ -84,8 +84,8 @@ from isaaclab.managers import EventTermCfg as EventTerm
 from isaaclab_tasks.utils.parse_cfg import parse_env_cfg
 from simpub.sim.isaacsim_publisher import IsaacSimPublisher
 
-import tasks  # noqa: F401
-from devices.SimPub.se3_SimPubHandTracking import Se3SimPubHandTrackingRel
+import isaac_imitation_learning.tasks  # noqa: F401
+from isaac_imitation_learning.devices.SimPub.se3_SimPubHandTracking import Se3SimPubHandTrackingRel
 
 
 class RateLimiter:

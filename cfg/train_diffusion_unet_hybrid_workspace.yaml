@@ -32,7 +32,7 @@ isaac:
 
 policy:
   # only added depth as valid obs type
-  _target_: robodiff.policy.diffusion_unet_hybrid_image_policy.DiffusionUnetHybridImagePolicy
+  _target_: isaac_imitation_learning.robodiff.policy.diffusion_unet_hybrid_image_policy.DiffusionUnetHybridImagePolicy
 
   shape_meta: ${shape_meta}
   

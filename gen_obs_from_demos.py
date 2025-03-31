@@ -61,7 +61,7 @@ from isaaclab.envs.mdp.recorders.recorders_cfg import ActionStateRecorderManager
 from isaaclab.utils.datasets import EpisodeData, HDF5DatasetFileHandler
 from isaaclab_tasks.utils.parse_cfg import parse_env_cfg
 
-import tasks  # noqa: F401
+import isaac_imitation_learning.tasks  # noqa: F401
 
 is_paused = False
 

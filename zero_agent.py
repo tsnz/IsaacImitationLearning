@@ -16,8 +16,9 @@ parser = argparse.ArgumentParser(description="Zero agent for Isaac Lab environme
 parser.add_argument(
     "--disable_fabric", action="store_true", default=False, help="Disable fabric and use USD I/O operations."
 )
-parser.add_argument("--num_envs", type=int, default=None, help="Number of environments to simulate.")
-parser.add_argument("--task", type=str, default=None, help="Name of the task.")
+parser.add_argument("--num_envs", type=int, default=1, help="Number of environments to simulate.")
+parser.add_argument("--task", type=str, default="IIL-Lift-Cube-v0-LowDim", help="Name of the task.")
+
 # append AppLauncher cli args
 AppLauncher.add_app_launcher_args(parser)
 # parse the arguments
@@ -33,7 +34,7 @@ import gymnasium as gym
 import torch
 from isaaclab_tasks.utils import parse_env_cfg
 
-import tasks  # noqa: F401
+import isaac_imitation_learning.tasks  # noqa: F401
 
 
 def main():

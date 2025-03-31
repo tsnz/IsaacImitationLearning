@@ -67,8 +67,8 @@ from isaaclab.managers import EventTermCfg as EventTerm
 from isaaclab_tasks.utils import parse_env_cfg
 from simpub.sim.isaacsim_publisher import IsaacSimPublisher
 
-import tasks  # noqa: F401
-from devices.SimPub.se3_SimPubHandTracking import Se3SimPubHandTrackingRel
+import isaac_imitation_learning.tasks  # noqa: F401
+from isaac_imitation_learning.devices.SimPub.se3_SimPubHandTracking import Se3SimPubHandTrackingRel
 
 
 def pre_process_actions(delta_pose: torch.Tensor, gripper_command: bool) -> torch.Tensor:
@@ -150,7 +150,7 @@ def main():
     # enable simpub if selected
     if args_cli.simpub and env.unwrapped.sim is not None and env.unwrapped.sim.stage is not None:
         print("parsing usd stage...")
-        IsaacSimPublisher(host="192.168.0.103", stage=env.unwrapped.sim.stage)
+        IsaacSimPublisher(host="127.0.0.1", stage=env.unwrapped.sim.stage)
 
     # create controller
     if args_cli.teleop_device.lower() == "keyboard":

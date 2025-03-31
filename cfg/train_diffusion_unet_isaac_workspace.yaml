@@ -46,15 +46,16 @@ policy:
     clip_sample: True # required when predict_epsilon=False
     prediction_type: epsilon # or sample
 
+  # added support for depth input using 1 input channel
   obs_encoder:
-    _target_: robodiff.model.vision.multi_dim_obs_encoder.MultiDimObsEncoder
+    _target_: isaac_imitation_learning.robodiff.model.vision.multi_dim_obs_encoder.MultiDimObsEncoder
     shape_meta: ${shape_meta}
     rgb_model:
       _target_: diffusion_policy.model.vision.model_getter.get_resnet
       name: resnet18
       weights: null
     depth_model:
-      _target_: robodiff.model.vision.model_getter.get_resnet
+      _target_: isaac_imitation_learning.robodiff.model.vision.model_getter.get_resnet
       name: resnet18
       weights: null      
       input_channel: 1        

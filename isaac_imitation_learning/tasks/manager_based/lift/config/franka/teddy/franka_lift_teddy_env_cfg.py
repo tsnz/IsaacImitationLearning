@@ -40,7 +40,7 @@ class FrankaLiftTeddyLowDimEnvCfg(FrankaLiftEnvCfg):
             spawn=UsdFileCfg(
                 usd_path=f"{ISAACLAB_NUCLEUS_DIR}/Objects/Teddy_Bear/teddy_bear.usd",
                 scale=(0.01, 0.01, 0.01),
-                deformable_props=DeformableBodyPropertiesCfg(solver_position_iteration_count=32),
+                deformable_props=DeformableBodyPropertiesCfg(solver_position_iteration_count=128),
             ),
         )
 

@@ -50,7 +50,7 @@ import torch
 from diffusion_policy.common.pytorch_util import dict_apply
 from isaaclab_tasks.utils import parse_env_cfg
 
-import tasks  # noqa: F401
+import isaac_imitation_learning.tasks  # noqa: F401
 
 if TYPE_CHECKING:
     from diffusion_policy.workspace.base_workspace import BaseWorkspace

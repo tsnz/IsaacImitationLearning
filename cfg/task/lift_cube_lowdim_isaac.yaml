@@ -18,10 +18,10 @@ topk:
   format_str: 'epoch={epoch:04d}-test_mean_score={test_mean_score:.3f}.ckpt'
 
 env_runner:
-  _target_: robodiff.env_runner.isaac_lab_lowdim_runner.IsaacLabLowdimRunner
+  _target_: isaac_imitation_learning.robodiff.env_runner.isaac_lab_lowdim_runner.IsaacLabLowdimRunner
   env_wrapper:
     _partial_: True
-    _target_: robodiff.utils.isaac_lab_lowdim_wrapper.IsaacLabLowdimWrapper
+    _target_: isaac_imitation_learning.robodiff.utils.isaac_lab_lowdim_wrapper.IsaacLabLowdimWrapper
     env: null
     obs_keys: *obs_keys
   dataset_path: *dataset_path  

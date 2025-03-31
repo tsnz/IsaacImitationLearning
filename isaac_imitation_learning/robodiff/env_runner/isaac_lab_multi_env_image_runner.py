@@ -13,7 +13,7 @@ from diffusion_policy.model.common.rotation_transformer import RotationTransform
 from diffusion_policy.policy.base_image_policy import BaseImagePolicy
 
 import wandb
-from robodiff.utils.video_recording_wrapper import VideoRecordingWrapper
+from isaac_imitation_learning.robodiff.utils import VideoRecordingWrapper
 
 
 class IsaacLabMultiEnvImageRunner(BaseImageRunner):
@@ -256,7 +256,7 @@ class IsaacLabMultiEnvImageRunner(BaseImageRunner):
 
         from isaacsim.core.utils.stage import close_stage
 
-        import tasks  # noqa:F401
+        import isaac_imitation_learning.tasks  # noqa:F401
 
         close_stage()
 

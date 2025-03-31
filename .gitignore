@@ -1,6 +1,7 @@
 # Python
 **/__pycache__/
 **/*.pyc
+**/*.egg-info/
 
 # VS Code
 .vscode/*
@@ -12,4 +13,5 @@
 logs/
 datasets/
 data/
+outputs/
 wandb/
