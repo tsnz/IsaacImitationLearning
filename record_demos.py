@@ -27,7 +27,7 @@ parser.add_argument(
     default="gamepad",
     help="Device for interacting with environment.",
 )
-parser.add_argument("--sensitivity", type=float, default=0.5, help="Sensitivity factor.")
+parser.add_argument("--sensitivity", type=float, default=1, help="Sensitivity factor.")
 parser.add_argument(
     "--dataset_file",
     type=str,
@@ -224,9 +224,11 @@ def main():
         teleop_interface.add_callback("RESET", reset_recording_instance)
         viewer = ViewerCfg(eye=(-0.25, -0.3, 0.5), lookat=(0.6, 0, 0), asset_name="viewer")
         ViewportCameraController(env, viewer)
-    elif args_cli.teleop_device.lower() == "simpub":
-        # TODO: Consider decimation for sensitivity
-        teleop_interface = Se3SimPubHandTrackingRel()
+    elif args_cli.teleop_device.lower() == "simpub":        
+        teleop_interface = Se3SimPubHandTrackingRel(
+            pos_sensitivity=(args_cli.sensitivity / env_cfg.decimation),
+            rot_sensitivity=(args_cli.sensitivity / env_cfg.decimation),
+        )
         teleop_interface.add_callback("Y", reset_recording_instance)
     else:
         raise ValueError(
