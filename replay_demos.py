@@ -23,9 +23,7 @@ parser.add_argument(
     default=[],
     help="A list of episode indices to be replayed. Keep empty to replay all in the dataset file.",
 )
-parser.add_argument(
-    "--dataset_file", type=str, default="datasets/dataset_obs_gen.hdf5", help="Dataset file to be replayed."
-)
+parser.add_argument("--dataset_file", type=str, default="datasets/dataset.hdf5", help="Dataset file to be replayed.")
 parser.add_argument(
     "--validate_states",
     action="store_true",
@@ -142,6 +140,7 @@ def main():
     dataset_file_handler.open(args_cli.dataset_file)
     env_name = dataset_file_handler.get_env_name()
     episode_count = dataset_file_handler.get_num_episodes()
+    episode_names = list(dataset_file_handler.get_episode_names())
 
     if episode_count == 0:
         print("No episodes found in the dataset.")
@@ -159,6 +158,12 @@ def main():
     num_envs = args_cli.num_envs
 
     env_cfg = parse_env_cfg(env_name, device=args_cli.device, num_envs=num_envs)
+
+    # get seed assuming the seeds for all episodes are the same
+    # for more info see https://isaac-sim.github.io/IsaacLab/main/source/features/reproducibility.html
+    episode_data = dataset_file_handler.load_episode(episode_names[0], "cpu")
+    if episode_data.seed is not None:
+        env_cfg.seed = int(episode_data.seed)
 
     # Disable all recorders and terminations
     env_cfg.recorders = {}
@@ -186,7 +191,6 @@ def main():
     rate_limiter = None if args_cli.step_hz == 0 else RateLimiter(args_cli.step_hz)
 
     # simulate environment -- run everything in inference mode
-    episode_names = list(dataset_file_handler.get_episode_names())
     replayed_episode_count = 0
     with contextlib.suppress(KeyboardInterrupt) and torch.inference_mode():
         while simulation_app.is_running() and not simulation_app.is_exiting():

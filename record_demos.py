@@ -53,6 +53,13 @@ parser.add_argument(
     default=False,
     help="Enable SimPub.",
 )
+parser.add_argument(
+    "--seed",
+    type=int,
+    default=None,
+    help="Seed for simulation.",
+)
+
 # append AppLauncher cli args
 AppLauncher.add_app_launcher_args(parser)
 # parse the arguments
@@ -150,6 +157,8 @@ def main():
     # parse configuration
     env_cfg = parse_env_cfg(task_name=args_cli.task, device=args_cli.device, num_envs=1)
     env_cfg.env_name = args_cli.task
+
+    env_cfg.seed = args_cli.seed
 
     # extract success checking function to invoke in the main loop
     success_term = None
@@ -250,6 +259,7 @@ def main():
                     success_step_count += 1
                     if success_step_count >= args_cli.num_success_steps:
                         env.recorder_manager.record_pre_reset([0], force_export_or_skip=False)
+                        env.recorder_manager.get_episode(0).seed = args_cli.seed
                         env.recorder_manager.set_success_to_episodes(
                             [0],
                             torch.tensor([[True]], dtype=torch.bool, device=env.device),

@@ -117,6 +117,7 @@ def main():
     dataset_file_handler.open(args_cli.dataset_file)
     env_name = dataset_file_handler.get_env_name()
     episode_count = dataset_file_handler.get_num_episodes()
+    episode_names = list(dataset_file_handler.get_episode_names())
 
     if episode_count == 0:
         print("No episodes found in the dataset.")
@@ -141,6 +142,12 @@ def main():
 
     env_cfg = parse_env_cfg(env_name, device=args_cli.device, num_envs=1)
     env_cfg.env_name = env_name
+
+    # get seed assuming the seeds for all episodes are the same
+    # for more info see https://isaac-sim.github.io/IsaacLab/main/source/features/reproducibility.html
+    episode_data = dataset_file_handler.load_episode(episode_names[0], "cpu")
+    if episode_data.seed is not None:
+        env_cfg.seed = int(episode_data.seed)
 
     # extract success checking function to invoke in the main loop
     success_term = None
@@ -186,7 +193,6 @@ def main():
     teleop_interface.reset()
 
     # simulate environment -- run everything in inference mode
-    episode_names = list(dataset_file_handler.get_episode_names())
     replayed_episode_count = 0
     with contextlib.suppress(KeyboardInterrupt) and torch.inference_mode():
         while simulation_app.is_running() and not simulation_app.is_exiting():
@@ -213,6 +219,7 @@ def main():
                         if store_obs:
                             print(f"{replayed_episode_count:4}: Obs saved")
                             env.recorder_manager.record_pre_reset([0], force_export_or_skip=False)
+                            env.recorder_manager.get_episode(0).seed = env_cfg.seed
                             env.recorder_manager.set_success_to_episodes(
                                 [0],
                                 torch.tensor([[True]], dtype=torch.bool, device=env.device),
