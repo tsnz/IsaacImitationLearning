@@ -46,7 +46,7 @@ class FrankaStowTeddyLowDimEnvCfg(FrankaStowEnvCfg):
 
         # Make the end effector less stiff to not hurt the poor teddy bear
         self.scene.robot.actuators["panda_hand"].effort_limit = 50.0
-        self.scene.robot.actuators["panda_hand"].stiffness = 40.0
+        self.scene.robot.actuators["panda_hand"].stiffness = 200.0
         self.scene.robot.actuators["panda_hand"].damping = 10.0
 
         # Add teddy reset event
