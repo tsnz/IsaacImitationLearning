@@ -10,9 +10,9 @@ import torch
 import tqdm
 from diffusion_policy.common.pytorch_util import dict_apply
 from diffusion_policy.env_runner.base_lowdim_runner import BaseLowdimRunner
-from diffusion_policy.gym_util.video_recording_wrapper import VideoRecorder
 from diffusion_policy.model.common.rotation_transformer import RotationTransformer
 from diffusion_policy.policy.base_lowdim_policy import BaseLowdimPolicy
+from diffusion_policy.real_world.video_recorder import VideoRecorder
 from isaaclab.utils.datasets import HDF5DatasetFileHandler
 
 import wandb
