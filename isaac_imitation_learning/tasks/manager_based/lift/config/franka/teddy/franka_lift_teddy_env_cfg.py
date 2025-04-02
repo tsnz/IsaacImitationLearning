@@ -107,12 +107,13 @@ class FrankaLiftTeddyEnvCfg(FrankaLiftTeddyLowDimEnvCfg):
 
         # add cameras to obs
         self.observations.policy.agentview_depth = ObsTerm(
-            func=mdp.image,
+            func=mdp.depth_image,
             params={
                 "sensor_cfg": SceneEntityCfg("agentview_camera"),
                 "data_type": "distance_to_camera",
                 "convert_perspective_to_orthogonal": False,
                 "normalize": True,
+                "max_depth": 2,
             },
         )
         self.observations.policy.agentview_image = ObsTerm(
@@ -125,12 +126,13 @@ class FrankaLiftTeddyEnvCfg(FrankaLiftTeddyLowDimEnvCfg):
             },
         )
         self.observations.policy.robot0_eef_depth = ObsTerm(
-            func=mdp.image,
+            func=mdp.depth_image,
             params={
                 "sensor_cfg": SceneEntityCfg("eef_camera"),
                 "data_type": "distance_to_camera",
                 "convert_perspective_to_orthogonal": False,
                 "normalize": True,
+                "max_depth": 1,
             },
         )
         self.observations.policy.robot0_eef_image = ObsTerm(

@@ -89,7 +89,6 @@ class FrankaLiftCubeEnvCfg(FrankaLiftCubeLowDimEnvCfg):
             height=128,
             width=128,
             data_types=["distance_to_camera", "rgb"],
-            # spawn=sim_utils.PinholeCameraCfg(
             spawn=sim_utils.FisheyeCameraCfg(
                 projection_type="fisheyeKannalaBrandtK3",
                 clipping_range=(0.001, 1.0e5),
@@ -104,12 +103,13 @@ class FrankaLiftCubeEnvCfg(FrankaLiftCubeLowDimEnvCfg):
 
         # add cameras to obs
         self.observations.policy.agentview_depth = ObsTerm(
-            func=mdp.image,
+            func=mdp.depth_image,
             params={
                 "sensor_cfg": SceneEntityCfg("agentview_camera"),
                 "data_type": "distance_to_camera",
                 "convert_perspective_to_orthogonal": False,
                 "normalize": True,
+                "max_depth": 2,
             },
         )
         self.observations.policy.agentview_image = ObsTerm(
@@ -122,12 +122,13 @@ class FrankaLiftCubeEnvCfg(FrankaLiftCubeLowDimEnvCfg):
             },
         )
         self.observations.policy.robot0_eef_depth = ObsTerm(
-            func=mdp.image,
+            func=mdp.depth_image,
             params={
                 "sensor_cfg": SceneEntityCfg("eef_camera"),
                 "data_type": "distance_to_camera",
                 "convert_perspective_to_orthogonal": False,
                 "normalize": True,
+                "max_depth": 1,
             },
         )
         self.observations.policy.robot0_eef_image = ObsTerm(

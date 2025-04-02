@@ -8,12 +8,13 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import torch
+from isaaclab.envs.mdp.observations import image
 from isaaclab.managers import SceneEntityCfg
 from isaaclab.utils.math import subtract_frame_transforms
 
 if TYPE_CHECKING:
     from isaaclab.assets import Articulation, DeformableObject, RigidObject
-    from isaaclab.envs import ManagerBasedRLEnv
+    from isaaclab.envs import ManagerBasedEnv, ManagerBasedRLEnv
     from isaaclab.sensors import FrameTransformer
 
 
@@ -91,3 +92,34 @@ def gripper_pos(env: ManagerBasedRLEnv, robot_cfg: SceneEntityCfg = SceneEntityC
     finger_joint_2 = -1 * robot.data.joint_pos[:, -2].clone().unsqueeze(1)
 
     return torch.cat((finger_joint_1, finger_joint_2), dim=1)
+
+
+def depth_image(
+    env: ManagerBasedEnv,
+    sensor_cfg: SceneEntityCfg = SceneEntityCfg("tiled_camera"),
+    data_type: str = "distance_to_camera",
+    convert_perspective_to_orthogonal: bool = False,
+    normalize: bool = True,
+    max_depth: float = 2,
+) -> torch.Tensor:
+    """Images of a specific datatype from the camera sensor.
+
+    If the flag :attr:`normalize` is True, post-processing of the images is performed. Infinity values are replaced with zero.
+
+    Args:
+        env: The environment the cameras are placed within.
+        sensor_cfg: The desired sensor to read from. Defaults to SceneEntityCfg("tiled_camera").
+        data_type: The data type to pull from the desired camera. Defaults to "rgb".
+        convert_perspective_to_orthogonal: Whether to orthogonalize perspective depth images.
+            This is used only when the data type is "distance_to_camera". Defaults to False.
+        normalize: Whether to normalize the images. This depends on the selected data type.
+            Defaults to True.
+        max_depth: Max reported depth value, values greater than the limit are replaced with zero.
+
+    Returns:
+        The images produced at the last time-step
+    """
+
+    sensor_output = image(env, sensor_cfg, data_type, convert_perspective_to_orthogonal, normalize)
+    sensor_output[sensor_output > max_depth] = 0
+    return sensor_output
