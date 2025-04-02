@@ -31,6 +31,16 @@ from tqdm import tqdm
 register_codecs()
 
 
+def array_to_flat_stats(arr: np.ndarray):
+    stat = {
+        "min": np.atleast_1d(np.min(arr)),
+        "max": np.atleast_1d(np.max(arr)),
+        "mean": np.atleast_1d(np.mean(arr)),
+        "std": np.atleast_1d(np.std(arr)),
+    }
+    return stat
+
+
 class IsaacLabReplayDataset(BaseImageDataset):
     def __init__(
         self,
@@ -186,7 +196,7 @@ class IsaacLabReplayDataset(BaseImageDataset):
 
         # depth
         for key in self.depth_keys:
-            stat = array_to_stats(self.replay_buffer[key])
+            stat = array_to_flat_stats(self.replay_buffer[key])
             normalizer[key] = get_range_normalizer_from_stat(stat)
         return normalizer
 
