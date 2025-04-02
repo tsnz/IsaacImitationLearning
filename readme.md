@@ -1,5 +1,5 @@
 # Isaac Imitation Learning
-This repo provides the tools to capture demonstrations in IsaacLab, as well as train a robot using the collected demonstrations. Demonstrations can be collected using different means, for example keybaord, gamepad or a MetaQuest 3 headset. The imitation learning part focuses mainly on diffusion.
+This repo provides the tools to capture demonstrations in IsaacLab, as well as train a robot using the collected demonstrations. Demonstrations can be collected using different means, for example keyboard, gamepad or a MetaQuest 3 headset. The imitation learning part focuses mainly on diffusion.
 
 ## Requirements
 - Needed
@@ -11,7 +11,7 @@ This repo provides the tools to capture demonstrations in IsaacLab, as well as t
     - [SimPub](https://github.com/tsnz/SimPublisher)
     - [IRXR](https://github.com/tsnz/IRXR-Unity)
 
-diffusion_policy is only needed when using the imitation learning part. SimPub is only needed when using the MQ3. IRXR is a seperate Unity application which needs to be installed on the MQ3.
+diffusion_policy is only needed when using the imitation learning part. SimPub is only needed when using the MQ3. IRXR is a separate Unity application which needs to be installed on the MQ3 and communicates with the simulation using SimPub.
 
 ## Installation
 
@@ -21,13 +21,10 @@ conda create --name isaaclab python=3.10
 conda activate isaaclab
 ```
 
-### 2. Install IsaacLab and pytorch3d (for diffusion_policy if needed)
-Example for Ubuntu 24.04 based on the [IsaacLab Installation Guide](https://isaac-sim.github.io/IsaacLab/main/source/setup/installation/pip_installation.html) with the addition of also installing pytorch3d
+### 2. Install IsaacSim and IsaacLab
+Example for Ubuntu 24.04 based on the [IsaacLab Installation Guide](https://isaac-sim.github.io/IsaacLab/main/source/setup/installation/pip_installation.html):
 ```
 # torch
-conda install pytorch==2.5.1 torchvision==0.20.1 pytorch3d cuda-version=12.4
-
-# alternatively, if diffusion_policy won't be installed, pip can be used as seen in the installation guide
 pip install torch==2.5.1 torchvision==0.20.1 --index-url https://download.pytorch.org/whl/cu124
 
 # IsaacSim
@@ -42,9 +39,7 @@ sudo apt install cmake build-essential
 # IsaacLab
 git clone git@github.com:isaac-sim/IsaacLab.git
 cd IsaacLab
-./isaaclab.sh --install
-# this replaces our conda installed pytorch version with pip pytorch 2.5.1
-# if the newly installed version differs from the old one this might have to be fixed
+./isaaclab.sh --install none
 
 
 # Test if IsaacLab works
@@ -54,13 +49,13 @@ python scripts/tutorials/00_sim/create_empty.py
 ### 3. (Optional) Install diffusion_policy
 ```
 cd ..
+pip install "git+https://github.com/facebookresearch/pytorch3d.git@stable"
 git clone git@github.com:real-stanford/diffusion_policy.git
 cd diffusion_policy
 pip install -e .
 ```
 
 ### 4. (Optional) Install SimPub
-Only needed if MQ3 support for visualization and teleoperation is desired
 ```
 cd ..
 git clone git@github.com:tsnz/SimPublisher.git
@@ -77,11 +72,11 @@ cd IsaacImitationLearning
 # depending on what should be included / checked
 pip install -e .                                    # minimal installation
 pip install -e .["SIMPUB", "IMITATION_LEARNING"]    # full installation
-# or any other combination
+# or any combination
 ```
 
 ### 6. (Optional) IRXR
-Software used on MQ3 for teleoperation, for more information see IRXR repo
+Software that needs to be installed on the MQ3 for teleoperation and visualization. For more information see IRXR repo.
 ```
 cd ..
 git clone git@github.com:tsnz/IRXR-Unity.git
@@ -104,16 +99,24 @@ python record_demos.py --task [TASKNAME]-LowDim --num_demos 10 --teleop_device k
 python gen_obs_from_demos.py --task [TASKNAME] --dataset_file [OUTPUT_PATH] --output_file[FULL_DEMO_OUTPUT_PATH] --enable-cameras
 ```
 
-This was the performance hit of using cameras does not negatively affect the operator when collecting demonstrations.
+This way the performance hit of using cameras does not negatively affect the operator when collecting demonstrations.
 Capture sessions can be split up and the resulting files can be combined into a single file using `merge_hdf5_datasets.py`.
 
 ### Training a model
 After collecting demonstrations, modify the corresponding config.yaml file in `cfg/tasks`. Only the `dataset_path` variable has to be changed if no other changes were made. After the change is made a corresponding workspace cfg has to be used for the task.
-| CFG           | Task                  |
-|:----------    |:----------            |
-| lowdim        | lowdim                |
-| hybrid        | lowdim, image, depth  |
-| image         | lowdim, image, depth  |
+| Workspace CFG     | Supported Tasks       |
+|:----------        |:----------            |
+| lowdim            | lowdim                |
+| image             | lowdim, image,        |
+| hybrid_image      | lowdim, image         |
+| mixed             | lowdim, image, depth  |
+| hybrid_mixed      | lowdim, image, depth  |
+
+
+hybrid_image and image use the original diffusion_policy workspaces and policies which do not support depth information as inputs. hybrid_image uses the observation encoder that comes with robomimic, image uses it's own observation encoder which can be specified in the configuration file. Mixed uses a custom observation encoder that supports depth inputs. This way a original diffusion_policy policy can be used. Mixed_hybrid is a custom version of the diffusion_policy hybrid policy which adds depth as a valid input modality. When a task uses depth information a custom dataset loader has to be used. The one that comes with diffusion_policy does not load depth information. This custom loader is compatible with diffusion_policy policies and workspaces if depth is not used as an input.
+
+Be careful when enabling caching for the dataset loaders. Using different versions of the loaders does not automatically regenerate existing caches.
+
 
 ```
 # training a model
@@ -133,4 +136,4 @@ python eval.py --checkpoint [MODEL_CKPT_PATH] --out [RESULT_OUT] --show
 python play.py --checkpoint [MODEL_CKPT_PATH] --num_envs 4 --num_rollouts 2
 ```
 
-The second option allows overwriting certain settings which are fixed when rerunning the rollout 
+The second option allows overwriting certain settings which are fixed when rerunning the rollout.

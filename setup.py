@@ -21,6 +21,8 @@ setup(
             "numba",
             "av==10.0",
             "robomimic==0.2",
+            "pandas",
+            "wandb<0.19",
         ],
     },
 )

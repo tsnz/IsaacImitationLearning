@@ -9,7 +9,7 @@ obs_keys: &obs_keys ['object_pos', 'robot0_eef_pos', 'robot0_eef_quat', 'robot0_
 task_id: IIL-Lift-Cube-v0-LowDim
 project: IIL-Lift-Cube-v0-LowDim
 dataset_type: ph
-dataset_path: &dataset_path /home/timo/master/datasets/vr_lift_cube_01/dataset_rgb_depth.hdf5
+dataset_path: &dataset_path /home/timo/master/datasets/vr_lift_cube_01/merged_dataset.hdf5
 abs_action: &abs_action False
 topk:
   monitor_key: test_mean_score
