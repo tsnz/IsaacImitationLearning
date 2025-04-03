@@ -15,3 +15,7 @@ datasets/
 data/
 outputs/
 wandb/
+
+# Omniverse
+**/*.dmp
+**/.thumbs

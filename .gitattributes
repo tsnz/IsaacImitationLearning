@@ -1,0 +1,4 @@
+*.usd filter=lfs diff=lfs merge=lfs -text
+*.usda filter=lfs diff=lfs merge=lfs -text
+*.usdac filter=lfs diff=lfs merge=lfs -text
+isaac_imitation_learning/tasks/assets/*.png filter=lfs diff=lfs merge=lfs -text
