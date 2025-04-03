@@ -207,17 +207,8 @@ class IsaacLabLowdimRunner(BaseLowdimRunner):
             if self.render_video:
                 env.env.set_mask(video_recorder_mask[this_global_slice])
 
-            env_name = self.env_meta["env_name"]
-            pbar = tqdm.tqdm(
-                total=self.max_steps,
-                desc=f"Eval {env_name} {chunk_idx + 1}/{n_chunks}",
-                leave=False,
-                mininterval=self.tqdm_interval_sec,
-            )
-
-            success = self._run_slice_rollout(env, policy, obs, pbar, this_local_slice, success_term)
-
-            pbar.close()
+            slice_desctiption = f"Eval {self.env_meta['env_name']} {chunk_idx + 1}/{n_chunks}"
+            success = self._run_slice_rollout(env, policy, obs, slice_desctiption, this_local_slice, success_term)
 
             # collect data for this round
             if self.render_video:
@@ -244,8 +235,9 @@ class IsaacLabLowdimRunner(BaseLowdimRunner):
             # check for video
             idx_vid_path = run_info["videos"].get(i)
             if idx_vid_path is not None:
-                sim_video = wandb.Video(idx_vid_path, f"ID {i} Finished: {success_state}")
-                log_data[prefix + f"sim_video_{i}"] = sim_video
+                idx = i if i < self.n_train else i - self.n_train
+                sim_video = wandb.Video(idx_vid_path, f"Finished: {success_state}")
+                log_data[prefix + f"sim_video_{idx}"] = sim_video
 
         # log aggregate metrics
         for prefix, value in rollout_results.items():
@@ -255,11 +247,19 @@ class IsaacLabLowdimRunner(BaseLowdimRunner):
 
         return log_data
 
-    def _run_slice_rollout(self, env, policy, init_obs, pbar, local_slice, success_term):
+    def _run_slice_rollout(self, env, policy, init_obs, description, local_slice, success_term):
         policy.reset()
         step = 0
         dones = torch.zeros(self.n_envs, device=self.sim_device)
         success_state = torch.zeros(self.n_envs, device=self.sim_device)
+
+        pbar = tqdm.tqdm(
+            total=self.max_steps,
+            desc=description,
+            leave=False,
+            mininterval=self.tqdm_interval_sec,
+        )
+
         obs = init_obs
         # only check active envs for termination
         while not torch.all(dones[local_slice]) and step < self.max_steps:
@@ -315,6 +315,7 @@ class IsaacLabLowdimRunner(BaseLowdimRunner):
             # update pbar
             pbar.update(actions.shape[0])
 
+        pbar.close()
         return success_state[local_slice]
 
     def _prep_slice_env(self, env, start, n_active_envs, run_info, global_slice):
