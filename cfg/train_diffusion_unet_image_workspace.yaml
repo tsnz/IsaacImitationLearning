@@ -59,7 +59,6 @@ policy:
     random_crop: True
     use_group_norm: True
     share_rgb_model: False
-    share_depth_model: False
     imagenet_norm: True    
 
   horizon: ${horizon}
@@ -89,14 +88,14 @@ ema:
 
 dataloader:
   batch_size: 64
-  num_workers: 4
+  num_workers: 2
   shuffle: True
   pin_memory: True
   persistent_workers: False
 
 val_dataloader:
   batch_size: 64
-  num_workers: 4
+  num_workers: 2
   shuffle: False
   pin_memory: True
   persistent_workers: False
@@ -124,8 +123,8 @@ training:
   freeze_encoder: False
   # training loop control
   # in epochs
-  rollout_every: 10
-  checkpoint_every: 10
+  rollout_every: 20
+  checkpoint_every: 20
   val_every: 1
   sample_every: 5
   # steps per epoch

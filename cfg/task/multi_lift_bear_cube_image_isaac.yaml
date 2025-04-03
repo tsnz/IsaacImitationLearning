@@ -39,7 +39,7 @@ env_runner:
     shape_meta: *shape_meta  
   isaac_args: ${isaac}
   task_ids: *task_ids
-  n_test: 24
+  n_test: 20
   n_test_vis: 3
   test_seed: 100000
   # use python's eval function as resolver, single-quoted string as argument
@@ -52,7 +52,7 @@ env_runner:
   crf: 22
   abs_action: *abs_action
   tqdm_interval_sec: 1.0
-  n_envs: [24, 12]
+  n_envs: [10, 5]
   dummy_rollout: False  
 
 dataset:
