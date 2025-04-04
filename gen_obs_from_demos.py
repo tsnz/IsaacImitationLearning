@@ -22,11 +22,11 @@ parser.add_argument(
     default=[],
     help="A list of episode indices to be replayed. Keep empty to replay all in the dataset file.",
 )
-parser.add_argument("--dataset_file", type=str, default="datasets/dataset.hdf5", help="Dataset file to be replayed.")
+parser.add_argument("--dataset_file", type=str, default="data/dataset.hdf5", help="Dataset file to be replayed.")
 parser.add_argument(
     "--output_file",
     type=str,
-    default="./datasets/dataset_obs_gen.hdf5",
+    default="./data/dataset_obs_gen.hdf5",
     help="File path to export rerecorded obs to.",
 )
 parser.add_argument(

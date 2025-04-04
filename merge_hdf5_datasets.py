@@ -16,7 +16,7 @@ parser.add_argument(
     default=[],
     help="A list of paths to HDF5 files to merge.",
 )
-parser.add_argument("--output_file", type=str, default="merged_dataset.hdf5", help="File path to merged output.")
+parser.add_argument("--output_file", type=str, default="./data/merged_dataset.hdf5", help="File path to merged output.")
 
 args_cli = parser.parse_args()
 

@@ -63,10 +63,6 @@ class FrankaLiftCubeLowDimEnvCfg(FrankaLiftEnvCfg):
             },
         )
 
-        # Disable replicate physics as it doesn't work for deformable objects
-        # FIXME: This should be fixed by the PhysX replication system.
-        self.scene.replicate_physics = False
-
 
 @configclass
 class FrankaLiftCubeEnvCfg(FrankaLiftCubeLowDimEnvCfg):

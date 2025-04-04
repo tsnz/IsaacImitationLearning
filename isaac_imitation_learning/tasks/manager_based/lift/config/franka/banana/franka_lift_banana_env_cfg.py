@@ -39,7 +39,7 @@ class FrankaLiftBananaLowDimEnvCfg(FrankaLiftEnvCfg):
         # Set banana as object
         self.scene.object = DeformableObjectCfg(
             prim_path="{ENV_REGEX_NS}/Object",
-            init_state=DeformableObjectCfg.InitialStateCfg(pos=(0.5, 0, 0.02), rot=(0.707, 0.707, 0, 0)),
+            init_state=DeformableObjectCfg.InitialStateCfg(pos=(0.5, 0, 0.02), rot=(1, 0, 0, 0)),
             spawn=UsdFileCfg(
                 usd_path=f"{IIL_ASSET_PATH}/banana/banana.usd",
                 deformable_props=DeformableBodyPropertiesCfg(solver_position_iteration_count=150),

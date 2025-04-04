@@ -187,7 +187,7 @@ class IsaacLabMultiEnvImageRunner(BaseImageRunner):
                 # visualize sim
                 idx_vid_path = run_info["videos"].get(idx)
                 if idx_vid_path is not None:
-                    sim_video = wandb.Video(idx_vid_path, f"Finished: {success_state}")
+                    sim_video = wandb.Video(idx_vid_path, f"Success: {success_state}")
                     log_data[prefix + f"sim_video_{j}"] = sim_video
 
                 idx += 1

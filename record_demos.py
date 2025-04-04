@@ -31,7 +31,7 @@ parser.add_argument("--sensitivity", type=float, default=1, help="Sensitivity fa
 parser.add_argument(
     "--dataset_file",
     type=str,
-    default="./datasets/dataset.hdf5",
+    default="./data/dataset.hdf5",
     help="File path to export recorded demos.",
 )
 parser.add_argument("--step_hz", type=int, default=30, help="Environment stepping rate in Hz.")
@@ -224,7 +224,7 @@ def main():
         teleop_interface.add_callback("RESET", reset_recording_instance)
         viewer = ViewerCfg(eye=(-0.25, -0.3, 0.5), lookat=(0.6, 0, 0), asset_name="viewer")
         ViewportCameraController(env, viewer)
-    elif args_cli.teleop_device.lower() == "simpub":        
+    elif args_cli.teleop_device.lower() == "simpub":
         teleop_interface = Se3SimPubHandTrackingRel(
             pos_sensitivity=(args_cli.sensitivity / env_cfg.decimation),
             rot_sensitivity=(args_cli.sensitivity / env_cfg.decimation),

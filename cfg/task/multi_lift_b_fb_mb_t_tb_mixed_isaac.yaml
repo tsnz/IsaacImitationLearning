@@ -1,4 +1,4 @@
-name: multi_lift_bear_cube_mixed_isaac
+name: multi_lift_B_C_FB_MB_T_TB_mixed_isaac
 
 shape_meta: &shape_meta
   # acceptable types: rgb, depth, low_dim
@@ -19,11 +19,11 @@ shape_meta: &shape_meta
   action: 
     shape: [7]
 
-project: Multi-Lift-Bear-Cube
+project: Multi_Lift_B_C_FB_MB_T_TB
 dataset_type: ph
-dataset_path: &dataset_path /home/timo/master/datasets/vr_lift_combo_01/merged_lift_dataset_rgb_depth.hdf5
+dataset_path: &dataset_path /home/timo/master/datasets/lift_b_fb_mb_t_tb/merged_dataset_obs_gen_60.hdf5
 abs_action: &abs_action False
-task_ids: &task_ids [IIL-Lift-Cube-v0, IIL-Lift-Teddy-v0]
+task_ids: &task_ids [IIL-Lift-Banana-v0, IIL-Lift-FoamBrick-v0, IIL-Lift-MustardBottle-v0, IIL-Lift-Teddy-v0, IIL-Lift-TennisBall-v0, IIL-Lift-Cube-v0]
 topk:
   monitor_key: mean_score
   mode: max
@@ -52,7 +52,7 @@ env_runner:
   crf: 22
   abs_action: *abs_action
   tqdm_interval_sec: 1.0
-  n_envs: [10, 5]
+  n_envs: 5
   dummy_rollout: False  
 
 dataset:

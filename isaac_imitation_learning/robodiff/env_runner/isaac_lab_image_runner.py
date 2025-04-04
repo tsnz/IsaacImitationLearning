@@ -206,7 +206,7 @@ class IsaacLabImageRunner(BaseImageRunner):
             idx_vid_path = run_info["videos"].get(i)
             if idx_vid_path is not None:
                 idx = i if i < self.n_train else i - self.n_train
-                sim_video = wandb.Video(idx_vid_path, f"Finished: {success_state}")
+                sim_video = wandb.Video(idx_vid_path, f"Success: {success_state}")
                 log_data[prefix + f"sim_video_{idx}"] = sim_video
 
         # log aggregate metrics
