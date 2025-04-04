@@ -173,7 +173,7 @@ class LiftEnvCfg(ManagerBasedRLEnvCfg):
         self.episode_length_s = 15.0
         # simulation settings
         self.sim.dt = 0.0167  # 60Hz
-        self.sim.render_interval = 1
+        self.sim.render_interval = 3
 
         self.sim.physx.bounce_threshold_velocity = 0.2
         self.sim.physx.bounce_threshold_velocity = 0.01

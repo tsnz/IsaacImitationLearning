@@ -1,11 +1,13 @@
 import isaaclab.sim as sim_utils
 import numpy as np
-from isaaclab.assets import RigidObjectCfg
+from isaaclab.assets import DeformableObjectCfg
 from isaaclab.managers import EventTermCfg as EventTerm
 from isaaclab.managers import ObservationTermCfg as ObsTerm
 from isaaclab.managers import SceneEntityCfg
 from isaaclab.sensors import CameraCfg
-from isaaclab.sim.schemas.schemas_cfg import RigidBodyPropertiesCfg
+from isaaclab.sim.schemas.schemas_cfg import (
+    DeformableBodyPropertiesCfg,
+)
 from isaaclab.sim.spawners.from_files.from_files_cfg import UsdFileCfg
 from isaaclab.utils import configclass
 from isaacsim.core.utils.rotations import euler_angles_to_quat
@@ -17,7 +19,7 @@ from ..franka_lift_env_cfg import FrankaLiftEnvCfg
 
 
 @configclass
-class FrankaLiftCubeLowDimEnvCfg(FrankaLiftEnvCfg):
+class FrankaLiftFoamBrickLowDimEnvCfg(FrankaLiftEnvCfg):
     def __post_init__(self):
         # post init of parent
         super().__post_init__()
@@ -34,30 +36,27 @@ class FrankaLiftCubeLowDimEnvCfg(FrankaLiftEnvCfg):
             "panda_finger_joint.*": 0.04,
         }
 
-        # Set Cube as object
-        self.scene.object = RigidObjectCfg(
+        # Make the end effector less stiff
+        self.scene.robot.actuators["panda_hand"].effort_limit = 50.0
+        self.scene.robot.actuators["panda_hand"].stiffness = 200.0
+        self.scene.robot.actuators["panda_hand"].damping = 10.0
+
+        # Set mustard bottle as object
+        self.scene.object = DeformableObjectCfg(
             prim_path="{ENV_REGEX_NS}/Object",
-            init_state=RigidObjectCfg.InitialStateCfg(pos=[0.5, 0, 0.055], rot=[1, 0, 0, 0]),
+            init_state=DeformableObjectCfg.InitialStateCfg(pos=(0.5, 0, 0.1), rot=(0.707, 0, 0, 0.707)),
             spawn=UsdFileCfg(
-                usd_path=f"{IIL_ASSET_PATH}/dex_cube/dex_cube_instanceable.usd",
-                scale=(0.8, 0.8, 0.8),
-                rigid_props=RigidBodyPropertiesCfg(
-                    solver_position_iteration_count=16,
-                    solver_velocity_iteration_count=1,
-                    max_angular_velocity=1000.0,
-                    max_linear_velocity=1000.0,
-                    max_depenetration_velocity=5.0,
-                    disable_gravity=False,
-                ),
+                usd_path=f"{IIL_ASSET_PATH}/foam_brick/foam_brick.usd",
+                deformable_props=DeformableBodyPropertiesCfg(solver_position_iteration_count=150),
             ),
         )
 
-        # Add cube reset event
+        # Add mustard bottle reset event
         self.events.reset_object_position = EventTerm(
-            func=mdp.reset_root_state_uniform,
+            func=mdp.reset_nodal_state_uniform,
             mode="reset",
             params={
-                "pose_range": {"x": (-0.15, 0.15), "y": (-0.15, 0.15), "z": (0.0, 0.0)},
+                "position_range": {"x": (-0.1, 0.1), "y": (-0.1, 0.1), "z": (0.0, 0.0)},
                 "velocity_range": {},
                 "asset_cfg": SceneEntityCfg("object"),
             },
@@ -69,7 +68,7 @@ class FrankaLiftCubeLowDimEnvCfg(FrankaLiftEnvCfg):
 
 
 @configclass
-class FrankaLiftCubeEnvCfg(FrankaLiftCubeLowDimEnvCfg):
+class FrankaLiftFoamBrickEnvCfg(FrankaLiftFoamBrickLowDimEnvCfg):
     def __post_init__(self):
         # post init of parent
         super().__post_init__()
