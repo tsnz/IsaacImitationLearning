@@ -22,6 +22,20 @@ gym.register(
 )
 
 gym.register(
+    id="IIL-Lift-Cube-v1",
+    entry_point="isaaclab.envs:ManagerBasedRLEnv",
+    kwargs={"env_cfg_entry_point": franka_lift_cube_env_cfg.FrankaLiftRotatedCubeEnvCfg},
+    disable_env_checker=True,
+)
+
+gym.register(
+    id="IIL-Lift-Cube-v1-LowDim",
+    entry_point="isaaclab.envs:ManagerBasedRLEnv",
+    kwargs={"env_cfg_entry_point": franka_lift_cube_env_cfg.FrankaLiftRotatedCubeLowDimEnvCfg},
+    disable_env_checker=True,
+)
+
+gym.register(
     id="IIL-Lift-Teddy-v0",
     entry_point="isaaclab.envs:ManagerBasedRLEnv",
     kwargs={"env_cfg_entry_point": franka_lift_teddy_env_cfg.FrankaLiftTeddyEnvCfg},
@@ -32,6 +46,20 @@ gym.register(
     id="IIL-Lift-Teddy-v0-LowDim",
     entry_point="isaaclab.envs:ManagerBasedRLEnv",
     kwargs={"env_cfg_entry_point": franka_lift_teddy_env_cfg.FrankaLiftTeddyLowDimEnvCfg},
+    disable_env_checker=True,
+)
+
+gym.register(
+    id="IIL-Lift-Teddy-v1",
+    entry_point="isaaclab.envs:ManagerBasedRLEnv",
+    kwargs={"env_cfg_entry_point": franka_lift_teddy_env_cfg.FrankaLiftRotatedTeddyEnvCfg},
+    disable_env_checker=True,
+)
+
+gym.register(
+    id="IIL-Lift-Teddy-v1-LowDim",
+    entry_point="isaaclab.envs:ManagerBasedRLEnv",
+    kwargs={"env_cfg_entry_point": franka_lift_teddy_env_cfg.FrankaLiftRotatedTeddyLowDimEnvCfg},
     disable_env_checker=True,
 )
 
@@ -50,6 +78,20 @@ gym.register(
 )
 
 gym.register(
+    id="IIL-Lift-Banana-v1",
+    entry_point="isaaclab.envs:ManagerBasedRLEnv",
+    kwargs={"env_cfg_entry_point": franka_lift_banana_env_cfg.FrankaLiftRotatedBananaEnvCfg},
+    disable_env_checker=True,
+)
+
+gym.register(
+    id="IIL-Lift-Banana-v1-LowDim",
+    entry_point="isaaclab.envs:ManagerBasedRLEnv",
+    kwargs={"env_cfg_entry_point": franka_lift_banana_env_cfg.FrankaLiftRotatedBananaLowDimEnvCfg},
+    disable_env_checker=True,
+)
+
+gym.register(
     id="IIL-Lift-MustardBottle-v0",
     entry_point="isaaclab.envs:ManagerBasedRLEnv",
     kwargs={"env_cfg_entry_point": franka_lift_mustard_bottle_env_cfg.FrankaLiftMustardBottleEnvCfg},
@@ -60,6 +102,20 @@ gym.register(
     id="IIL-Lift-MustardBottle-v0-LowDim",
     entry_point="isaaclab.envs:ManagerBasedRLEnv",
     kwargs={"env_cfg_entry_point": franka_lift_mustard_bottle_env_cfg.FrankaLiftMustardBottleLowDimEnvCfg},
+    disable_env_checker=True,
+)
+
+gym.register(
+    id="IIL-Lift-MustardBottle-v1",
+    entry_point="isaaclab.envs:ManagerBasedRLEnv",
+    kwargs={"env_cfg_entry_point": franka_lift_mustard_bottle_env_cfg.FrankaLiftRotatedMustardBottleEnvCfg},
+    disable_env_checker=True,
+)
+
+gym.register(
+    id="IIL-Lift-MustardBottle-v1-LowDim",
+    entry_point="isaaclab.envs:ManagerBasedRLEnv",
+    kwargs={"env_cfg_entry_point": franka_lift_mustard_bottle_env_cfg.FrankaLiftRotatedMustardBottleLowDimEnvCfg},
     disable_env_checker=True,
 )
 
@@ -88,5 +144,19 @@ gym.register(
     id="IIL-Lift-FoamBrick-v0-LowDim",
     entry_point="isaaclab.envs:ManagerBasedRLEnv",
     kwargs={"env_cfg_entry_point": franka_lift_foam_brick_env_cfg.FrankaLiftFoamBrickLowDimEnvCfg},
+    disable_env_checker=True,
+)
+
+gym.register(
+    id="IIL-Lift-FoamBrick-v1",
+    entry_point="isaaclab.envs:ManagerBasedRLEnv",
+    kwargs={"env_cfg_entry_point": franka_lift_foam_brick_env_cfg.FrankaLiftRotatedFoamBrickCfg},
+    disable_env_checker=True,
+)
+
+gym.register(
+    id="IIL-Lift-FoamBrick-v1-LowDim",
+    entry_point="isaaclab.envs:ManagerBasedRLEnv",
+    kwargs={"env_cfg_entry_point": franka_lift_foam_brick_env_cfg.FrankaLiftRotatedFoamBrickLowDimEnvCfg},
     disable_env_checker=True,
 )
