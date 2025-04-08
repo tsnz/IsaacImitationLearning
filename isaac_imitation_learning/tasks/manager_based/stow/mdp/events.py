@@ -13,7 +13,7 @@ import torch
 from isaaclab.managers import SceneEntityCfg
 
 if TYPE_CHECKING:
-    from isaaclab.assets import Articulation
+    from isaaclab.assets import Articulation, DeformableObject
     from isaaclab.envs import ManagerBasedEnv
 
 
@@ -53,3 +53,21 @@ def randomize_joint_by_gaussian_offset(
     asset.set_joint_position_target(joint_pos, env_ids=env_ids)
     asset.set_joint_velocity_target(joint_vel, env_ids=env_ids)
     asset.write_joint_state_to_sim(joint_pos, joint_vel, env_ids=env_ids)
+
+
+def randomize_nodal_rotation(
+    env: ManagerBasedEnv,
+    env_ids: torch.Tensor,
+    rotation_range: dict[str, tuple[float, float]],
+    object_cfg: SceneEntityCfg = SceneEntityCfg("object"),
+):
+    object: DeformableObject = env.scene[object_cfg.name]
+    nodal_pos = object.data.nodal_pos_w
+
+    range_list = [rotation_range.get(key, (0.0, 0.0)) for key in ["roll", "pitch", "yaw"]]
+    ranges = torch.tensor(range_list, device=object.device)
+    rand_samples = math_utils.sample_uniform(ranges[:, 0], ranges[:, 1], (len(env_ids), 3), device=object.device)
+    quat = math_utils.quat_from_euler_xyz(rand_samples[:, 0], rand_samples[:, 1], rand_samples[:, 2])
+
+    rot_nodal_pos = object.transform_nodal_pos(nodal_pos, quat=quat)
+    object.write_nodal_pos_to_sim(rot_nodal_pos, env_ids)

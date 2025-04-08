@@ -15,3 +15,17 @@ gym.register(
     kwargs={"env_cfg_entry_point": franka_stow_teddy_env_cfg.FrankaStowTeddyLowDimEnvCfg},
     disable_env_checker=True,
 )
+
+gym.register(
+    id="IIL-Stow-Teddy-v1",
+    entry_point="isaaclab.envs:ManagerBasedRLEnv",
+    kwargs={"env_cfg_entry_point": franka_stow_teddy_env_cfg.FrankaStowTeddyV1EnvCfg},
+    disable_env_checker=True,
+)
+
+gym.register(
+    id="IIL-Stow-Teddy-v1-LowDim",
+    entry_point="isaaclab.envs:ManagerBasedRLEnv",
+    kwargs={"env_cfg_entry_point": franka_stow_teddy_env_cfg.FrankaStowTeddyV1LowDimEnvCfg},
+    disable_env_checker=True,
+)

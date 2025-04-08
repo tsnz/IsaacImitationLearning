@@ -51,7 +51,7 @@ class ObjectTableBinSceneCfg(InteractiveSceneCfg):
         init_state=AssetBaseCfg.InitialStateCfg(pos=[0.5, 0, 0], rot=[0.707, 0, 0, 0.707]),
         spawn=UsdFileCfg(
             usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/Mounts/SeattleLabTable/table_instanceable.usd",
-            scale=(1.1, 1.0, 1.0),
+            scale=(1.3, 1.0, 1.0),
         ),
     )
 
@@ -152,8 +152,10 @@ class TerminationsCfg:
         func=mdp.root_height_below_minimum,
         params={"minimum_height": -0.05, "asset_cfg": SceneEntityCfg("bin")},
     )
+
+    # bin internal dimensions x: 0.18, y: 0.26, z: 0.14
     success = DoneTerm(
-        func=mdp.object_in_bin, params={"finish_range": {"x": (-0.04, 0.04), "y": (-0.06, 0.06), "z": (-0.1, 0.1)}}
+        func=mdp.object_in_bin, params={"finish_range": {"x": (-0.08, 0.08), "y": (-0.12, 0.12), "z": (-0.07, 0.1)}}
     )
 
 
