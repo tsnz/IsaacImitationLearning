@@ -5,7 +5,8 @@ from isaaclab.managers import SceneEntityCfg
 from isaaclab.sim.schemas.schemas_cfg import DeformableBodyPropertiesCfg
 from isaaclab.sim.spawners.from_files.from_files_cfg import UsdFileCfg
 from isaaclab.utils import configclass
-from isaaclab.utils.assets import ISAACLAB_NUCLEUS_DIR
+
+from isaac_imitation_learning.tasks.assets import IIL_ASSET_PATH
 
 from .... import mdp
 from ..franka_stow_env_cam_setup_cfg import FrankaStowEnvCamCfg
@@ -35,7 +36,7 @@ class FrankaStowTeddyLowDimEnvCfg(FrankaStowEnvCfg):
             prim_path="{ENV_REGEX_NS}/Object",
             init_state=DeformableObjectCfg.InitialStateCfg(pos=(0.5, 0, 0.02), rot=(0.707, 0, 0, 0.707)),
             spawn=UsdFileCfg(
-                usd_path=f"{ISAACLAB_NUCLEUS_DIR}/Objects/Teddy_Bear/teddy_bear.usd",
+                usd_path=f"{IIL_ASSET_PATH}/teddy_bear/teddy_bear.usd",
                 scale=(0.01, 0.01, 0.01),
                 deformable_props=DeformableBodyPropertiesCfg(
                     solver_position_iteration_count=150, simulation_hexahedral_resolution=8
