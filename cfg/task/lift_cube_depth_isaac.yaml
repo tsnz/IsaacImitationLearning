@@ -1,6 +1,6 @@
 name: lift_cube_depth_isaac
 
-shape_meta: &shape_meta
+shape_meta:
   # acceptable types: rgb, low_dim, depth
   obs:
     agentview_depth:
@@ -22,8 +22,8 @@ shape_meta: &shape_meta
 task_id: IIL-Lift-Cube-v0
 project: IIL-Lift-Cube-v0
 dataset_type: ph
-dataset_path: &dataset_path /home/timo/master/datasets/vr_lift_cube_01/dataset_rgb_depth.hdf5
-abs_action: &abs_action False
+dataset_path: ${oc.env:HOME}/master/datasets/lift_cube_v0/dataset_obs_gen.hdf5
+abs_action: False
 topk:
   monitor_key: test_mean_score
   mode: max
@@ -36,8 +36,8 @@ env_runner:
     _partial_: True
     _target_: isaac_imitation_learning.robodiff.utils.isaac_lab_image_wrapper.IsaacLabImageWrapper
     env: null
-    shape_meta: *shape_meta
-  dataset_path: *dataset_path
+    shape_meta: ${...shape_meta}
+  dataset_path: ${..dataset_path}
   n_train: 6
   n_train_vis: 2
   train_start_idx: 0
@@ -52,24 +52,35 @@ env_runner:
   render_obs_key: 'agentview_image'
   fps: 30
   crf: 22
-  abs_action: *abs_action
+  abs_action: ${..abs_action}
   tqdm_interval_sec: 1.0
   n_envs: 28
   dummy_rollout: False
   persistent_env: True
-  isaac_args: ${isaac}
+  isaac_args: ${..isaac}
 
 dataset:
   _target_: isaac_imitation_learning.robodiff.dataset.isaac_lab_replay_dataset.IsaacLabReplayDataset
-  shape_meta: *shape_meta
-  dataset_path: *dataset_path
+  shape_meta: ${..shape_meta}
+  dataset_path: ${..dataset_path}
   horizon: ${horizon}
   pad_before: ${eval:'${n_obs_steps}-1+${n_latency_steps}'}
   pad_after: ${eval:'${n_action_steps}-1'}
   n_obs_steps: ${dataset_obs_steps}
-  abs_action: *abs_action
+  abs_action: ${..abs_action}
   rotation_rep: 'rotation_6d'
   use_legacy_normalizer: False
   use_cache: False
   seed: 42
   val_ratio: 0.02
+
+  isaac:
+  headless: True
+  livestream: -1
+  enable_cameras: True
+  device: ${device}
+  cpu: False
+  verbose: False
+  info: False
+  experience: ""
+  kit_args: ""

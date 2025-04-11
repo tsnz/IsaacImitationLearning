@@ -1,0 +1,13 @@
+# @package _global_
+
+# increase number of dataloaders, since more RAM & VRAM is available
+dataloader:
+  num_workers: 8
+
+val_dataloader:
+  num_workers: 8
+
+# change output path
+hydra:
+  run:
+    dir: ${oc.env:HOME}/out/${std_output_dir}

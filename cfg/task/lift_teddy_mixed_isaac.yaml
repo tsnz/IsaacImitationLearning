@@ -1,14 +1,14 @@
-name: multi_lift_bear_cube_image_isaac
+name: lift_teddy_mixed_isaac
 
-shape_meta: &shape_meta
+shape_meta:
   # acceptable types: rgb, low_dim
   obs:
     agentview_image:
       shape: [3, 128, 128]
       type: rgb
-    robot0_eef_image:
-      shape: [3, 128, 128]
-      type: rgb
+    robot0_eef_depth:
+      shape: [1, 128, 128]
+      type: depth
     robot0_eef_pos:
       shape: [3]
       # type default: low_dim
@@ -19,27 +19,31 @@ shape_meta: &shape_meta
   action: 
     shape: [7]
 
-project: Multi-Lift-Bear-Cube
+task_id: IIL-Lift-Teddy-v1
+project: IIL-Lift-Teddy-v1
 dataset_type: ph
-dataset_path: &dataset_path /home/timo/master/datasets/vr_lift_combo_01/merged_lift_dataset_rgb_depth.hdf5
-abs_action: &abs_action False
-task_ids: &task_ids [IIL-Lift-Cube-v0, IIL-Lift-Teddy-v0]
+dataset_path: ${oc.env:HOME}/master/datasets/lift_teddy_v1/dataset_obs_gen.hdf5
+abs_action: False
 topk:
-  monitor_key: mean_score
+  monitor_key: test_mean_score
   mode: max
   k: 3
-  format_str: 'epoch={epoch:04d}-mean_score={mean_score:.3f}.ckpt'
+  format_str: 'epoch={epoch:04d}-test_mean_score={test_mean_score:.3f}.ckpt'
 
 env_runner:
-  _target_: isaac_imitation_learning.robodiff.env_runner.isaac_lab_multi_env_image_runner.IsaacLabMultiEnvImageRunner
+  _target_: isaac_imitation_learning.robodiff.env_runner.isaac_lab_image_runner.IsaacLabImageRunner
   env_wrapper:
     _partial_: True
     _target_: isaac_imitation_learning.robodiff.utils.isaac_lab_image_wrapper.IsaacLabImageWrapper
     env: null
-    shape_meta: *shape_meta  
-  isaac_args: ${isaac}
-  task_ids: *task_ids
-  n_test: 20
+    shape_meta: ${...shape_meta}
+  dataset_path: ${..dataset_path}
+  # if n_train is > 0 n_envs has to be set to 1 because reset_to does not work properly with deformable objects right now
+  # but even in that case it basically is just a test run, since it is not resetting properly
+  n_train: 0
+  n_train_vis: 0
+  train_start_idx: 0
+  n_test: 24
   n_test_vis: 3
   test_seed: 100000
   # use python's eval function as resolver, single-quoted string as argument
@@ -50,22 +54,35 @@ env_runner:
   render_obs_key: 'agentview_image'
   fps: 30
   crf: 22
-  abs_action: *abs_action
+  abs_action: ${..abs_action}
   tqdm_interval_sec: 1.0
-  n_envs: [10, 5]
-  dummy_rollout: False  
+  n_envs: 12
+  dummy_rollout: False
+  persistent_env: True
+  isaac_args: ${..isaac}
 
 dataset:
   _target_: diffusion_policy.dataset.robomimic_replay_image_dataset.RobomimicReplayImageDataset
-  shape_meta: *shape_meta
-  dataset_path: *dataset_path
+  shape_meta: ${..shape_meta}
+  dataset_path: ${..dataset_path}
   horizon: ${horizon}
   pad_before: ${eval:'${n_obs_steps}-1+${n_latency_steps}'}
   pad_after: ${eval:'${n_action_steps}-1'}
   n_obs_steps: ${dataset_obs_steps}
-  abs_action: *abs_action
+  abs_action: ${..abs_action}
   rotation_rep: 'rotation_6d'
   use_legacy_normalizer: False
   use_cache: False
   seed: 42
   val_ratio: 0.02
+
+isaac:
+  headless: True
+  livestream: -1
+  enable_cameras: True
+  device: ${device}
+  cpu: False
+  verbose: False
+  info: False
+  experience: ""
+  kit_args: ""

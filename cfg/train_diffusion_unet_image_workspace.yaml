@@ -19,17 +19,7 @@ dataset_obs_steps: ${n_obs_steps}
 past_action_visible: False
 keypoint_visible_rate: 1.0
 obs_as_global_cond: True
-
-isaac:
-  headless: True
-  livestream: -1
-  enable_cameras: True
-  device: "cuda:0"
-  cpu: False
-  verbose: False
-  info: False
-  experience: ""
-  kit_args: ""
+device: "cuda:0"
 
 policy:
   _target_: diffusion_policy.policy.diffusion_unet_image_policy.DiffusionUnetImagePolicy
@@ -108,7 +98,7 @@ optimizer:
   weight_decay: 1.0e-6
 
 training:
-  device: "cuda:0"
+  device: ${device}
   seed: 42
   debug: False
   resume: True
@@ -147,15 +137,10 @@ checkpoint:
   save_last_ckpt: True
   save_last_snapshot: False
 
-multi_run:
-  run_dir: data/outputs/${now:%Y.%m.%d}/${now:%H.%M.%S}_${name}_${task_name}
-  wandb_name_base: ${now:%Y.%m.%d-%H.%M.%S}_${name}_${task_name}
-
+std_output_dir: data/outputs/${now:%Y.%m.%d}/${now:%H.%M.%S}_${name}_${task_name}
 hydra:
-  job:
-    override_dirname: ${name}
   run:
-    dir: data/outputs/${now:%Y.%m.%d}/${now:%H.%M.%S}_${name}_${task_name}
+    dir: ${std_output_dir}
   sweep:
-    dir: data/outputs/${now:%Y.%m.%d}/${now:%H.%M.%S}_${name}_${task_name}
+    dir: ${std_output_dir}
     subdir: ${hydra.job.num}

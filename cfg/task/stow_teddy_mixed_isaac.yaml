@@ -1,4 +1,4 @@
-name: lift_teddy_image_isaac
+name: stow_teddy_mixed_isaac
 
 shape_meta:
   # acceptable types: rgb, low_dim
@@ -6,9 +6,9 @@ shape_meta:
     agentview_image:
       shape: [3, 128, 128]
       type: rgb
-    robot0_eef_image:
-      shape: [3, 128, 128]
-      type: rgb
+    robot0_eef_depth:
+      shape: [1, 128, 128]
+      type: depth
     robot0_eef_pos:
       shape: [3]
       # type default: low_dim
@@ -19,10 +19,10 @@ shape_meta:
   action: 
     shape: [7]
 
-task_id: IIL-Lift-Teddy-v1
-project: IIL-Lift-Teddy-v1
+task_id: IIL-Stow-Teddy-v1
+project: IIL-Stow-Teddy-v1
 dataset_type: ph
-dataset_path: ${oc.env:HOME}/master/datasets/lift_teddy_v1/dataset_obs_gen.hdf5
+dataset_path: ${oc.env:HOME}/master/datasets/stow_teddy_v1/dataset_obs_gen.hdf5
 abs_action: False
 topk:
   monitor_key: test_mean_score
@@ -47,7 +47,7 @@ env_runner:
   n_test_vis: 3
   test_seed: 100000
   # use python's eval function as resolver, single-quoted string as argument
-  max_steps: ${eval:'250 if "${task.dataset_type}" == "mh" else 200'}
+  max_steps: ${eval:'400 if "${task.dataset_type}" == "mh" else 300'}
   n_obs_steps: ${n_obs_steps}
   n_action_steps: ${n_action_steps}
   render_video: True
@@ -57,6 +57,7 @@ env_runner:
   abs_action: ${..abs_action}
   tqdm_interval_sec: 1.0
   n_envs: 12
+  sim_device: ${isaac.device}
   dummy_rollout: False
   persistent_env: True
   isaac_args: ${..isaac}

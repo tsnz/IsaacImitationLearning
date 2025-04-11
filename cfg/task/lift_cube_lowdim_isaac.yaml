@@ -4,13 +4,13 @@ obs_dim: 12
 action_dim: 7
 keypoint_dim: 3
 
-obs_keys: &obs_keys ['object_pos', 'robot0_eef_pos', 'robot0_eef_quat', 'robot0_gripper_qpos']
+obs_keys: ['object_pos', 'robot0_eef_pos', 'robot0_eef_quat', 'robot0_gripper_qpos']
 
 task_id: IIL-Lift-Cube-v0-LowDim
-project: IIL-Lift-Cube-v0-LowDim
+project: IIL-Lift-Cube-v0
 dataset_type: ph
-dataset_path: &dataset_path /home/timo/master/datasets/vr_lift_cube_01/merged_dataset.hdf5
-abs_action: &abs_action False
+dataset_path: ${oc.env:HOME}/master/datasets/lift_cube_v0/merged_dataset.hdf5
+abs_action: False
 topk:
   monitor_key: test_mean_score
   mode: max
@@ -23,8 +23,8 @@ env_runner:
     _partial_: True
     _target_: isaac_imitation_learning.robodiff.utils.isaac_lab_lowdim_wrapper.IsaacLabLowdimWrapper
     env: null
-    obs_keys: *obs_keys
-  dataset_path: *dataset_path  
+    obs_keys: ${...obs_keys}
+  dataset_path: ${..dataset_path}
   n_train: 6
   n_train_vis: 2
   train_start_idx: 0
@@ -40,21 +40,32 @@ env_runner:
   render_hw: [128,128]
   fps: 30
   crf: 22
-  abs_action: *abs_action
+  abs_action: ${..abs_action}
   tqdm_interval_sec: 1.0
   n_envs: 28
   dummy_rollout: False
   persistent_env: True
-  isaac_args: ${isaac}
+  isaac_args: ${..isaac}
 
 dataset:
   _target_: diffusion_policy.dataset.robomimic_replay_lowdim_dataset.RobomimicReplayLowdimDataset
-  dataset_path: *dataset_path
+  dataset_path: ${..dataset_path}
   horizon: ${horizon}
   pad_before: ${eval:'${n_obs_steps}-1+${n_latency_steps}'}
   pad_after: ${eval:'${n_action_steps}-1'}
-  obs_keys: *obs_keys
-  abs_action: *abs_action
+  obs_keys: ${..obs_keys}
+  abs_action: ${..abs_action}
   use_legacy_normalizer: False
   seed: 42
   val_ratio: 0.05
+
+isaac:
+  headless: True
+  livestream: -1
+  enable_cameras: True
+  device: ${device}
+  cpu: False
+  verbose: False
+  info: False
+  experience: ""
+  kit_args: ""
