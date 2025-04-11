@@ -38,6 +38,15 @@ parser.add_argument(
         " --num_envs is 1."
     ),
 )
+parser.add_argument(
+    "--skip_first_n_steps",
+    type=int,
+    default=-1,
+    help=(
+        "Skip recording the first n steps. Intended as a workaround for incorrect camera sensor data for a few frames "
+        "after a rest"
+    ),
+)
 
 # append AppLauncher cli args
 AppLauncher.add_app_launcher_args(parser)
@@ -58,6 +67,7 @@ import omni.log  # noqa: F401
 import torch
 from isaaclab.devices import Se3Keyboard
 from isaaclab.envs.mdp.recorders.recorders_cfg import ActionStateRecorderManagerCfg
+from isaaclab.sim import SimulationContext
 from isaaclab.utils.datasets import EpisodeData, HDF5DatasetFileHandler
 from isaaclab_tasks.utils.parse_cfg import parse_env_cfg
 
@@ -185,12 +195,12 @@ def main():
 
     # reset before starting
     env.reset()
-    # perform a few actions to prevent lighting issues
-    # if 1st sim step is recorded, its unnaturally dark
-    dummy_action = torch.zeros(env.action_space.shape)
-    for i in range(3):
-        env.step(dummy_action)
-    teleop_interface.reset()
+    # workaround for blank frame at start issue
+    # https://isaac-sim.github.io/IsaacLab/main/source/refs/issues.html#blank-initial-frames-from-the-camera
+    sim = SimulationContext.instance()
+    # note: the number of steps might vary depending on how complicated the scene is.
+    for _ in range(12):
+        sim.render()
 
     # simulate environment -- run everything in inference mode
     replayed_episode_count = 0
@@ -200,11 +210,17 @@ def main():
             env_episode_data_map = EpisodeData()
             first_loop = True
             has_next_action = True
+            step_idx = 0
             while has_next_action:
                 # initialize actions with zeros so those without next action will not move
                 actions = torch.zeros(env.action_space.shape)
                 has_next_action = False
-                # for env_id in range(1):
+
+                # hacky workaround for incorrect image sensor output for a few frames after reset
+                # https://isaac-sim.github.io/IsaacLab/main/source/refs/issues.html#stale-values-after-resetting-the-environment
+                if args_cli.skip_first_n_steps == step_idx:
+                    env.recorder_manager.reset()
+
                 env_next_action = env_episode_data_map.get_next_action()
                 if env_next_action is None:
                     # store replay obs
@@ -246,6 +262,7 @@ def main():
                         # Get the first action for the new episode
                         env_next_action = env_episode_data_map.get_next_action()
                         has_next_action = True
+                        step_idx = 0
                     else:
                         continue
                 else:
@@ -273,6 +290,8 @@ def main():
                         else:
                             print("\t- mismatched.")
                             print(comparison_log)
+
+                step_idx += 1
             break
     # Close environment after replay in complete
     plural_trailing_s = "s" if replayed_episode_count > 1 else ""
