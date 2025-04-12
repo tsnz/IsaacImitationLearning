@@ -62,7 +62,7 @@ env_runner:
   isaac_args: ${..isaac}
 
 dataset:
-  _target_: diffusion_policy.dataset.robomimic_replay_image_dataset.RobomimicReplayImageDataset
+  _target_: isaac_imitation_learning.robodiff.dataset.isaac_lab_replay_dataset.IsaacLabReplayDataset
   shape_meta: ${..shape_meta}
   dataset_path: ${..dataset_path}
   horizon: ${horizon}
