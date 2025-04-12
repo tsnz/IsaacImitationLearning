@@ -8,6 +8,7 @@ val_dataloader:
   num_workers: 8
 
 # change output path
+override_output_dir: ${oc.env:HOME}/out
 hydra:
   run:
-    dir: ${oc.env:HOME}/out/${std_output_dir}
+    dir: ${override_output_dir}/${std_output_dir}

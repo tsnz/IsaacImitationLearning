@@ -57,7 +57,6 @@ env_runner:
   abs_action: ${..abs_action}
   tqdm_interval_sec: 1.0
   n_envs: 12
-  sim_device: ${isaac.device}
   dummy_rollout: False
   persistent_env: True
   isaac_args: ${..isaac}

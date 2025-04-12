@@ -57,13 +57,12 @@ env_runner:
   abs_action: ${..abs_action}
   tqdm_interval_sec: 1.0
   n_envs: 12
-  sim_device: ${isaac.device}
   dummy_rollout: False
   persistent_env: True
   isaac_args: ${..isaac}
 
 dataset:
-  _target_: diffusion_policy.dataset.robomimic_replay_image_dataset.RobomimicReplayImageDataset
+  _target_: isaac_imitation_learning.robodiff.dataset.isaac_lab_replay_dataset.IsaacLabReplayDataset
   shape_meta: ${..shape_meta}
   dataset_path: ${..dataset_path}
   horizon: ${horizon}
