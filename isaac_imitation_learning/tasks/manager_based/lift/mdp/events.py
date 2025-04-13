@@ -62,7 +62,7 @@ def randomize_nodal_rotation(
     object_cfg: SceneEntityCfg = SceneEntityCfg("object"),
 ):
     object: DeformableObject = env.scene[object_cfg.name]
-    nodal_pos = object.data.nodal_pos_w
+    nodal_pos = object.data.nodal_pos_w[env_ids].clone()
 
     range_list = [rotation_range.get(key, (0.0, 0.0)) for key in ["roll", "pitch", "yaw"]]
     ranges = torch.tensor(range_list, device=object.device)
