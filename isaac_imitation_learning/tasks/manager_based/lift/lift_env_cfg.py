@@ -55,7 +55,7 @@ class ObjectTableSceneCfg(InteractiveSceneCfg):
     plane = AssetBaseCfg(
         prim_path="/World/GroundPlane",
         init_state=AssetBaseCfg.InitialStateCfg(pos=[0, 0, -1.05]),
-        spawn=GroundPlaneCfg(size=[5, 5]),
+        spawn=GroundPlaneCfg(size=[200, 200]),
     )
 
     # lights
@@ -96,24 +96,8 @@ class ObservationsCfg:
             self.enable_corruption = False
             self.concatenate_terms = False
 
-    # @configclass
-    # class SubtaskCfg(ObsGroup):
-    #     grasp = ObsTerm(
-    #         func=mdp.object_grasped,
-    #         params={
-    #             "robot_cfg": SceneEntityCfg("robot"),
-    #             "ee_frame_cfg": SceneEntityCfg("ee_frame"),
-    #             "object_cfg": SceneEntityCfg("object"),
-    #         },
-    #     )
-
-    #     def __post_init__(self):
-    #         self.enable_corruption = False
-    #         self.concatenate_terms = False
-
     # observation groups
     policy: PolicyCfg = PolicyCfg()
-    # subtask_terms: SubtaskCfg = SubtaskCfg()
 
 
 @configclass
@@ -173,7 +157,7 @@ class LiftEnvCfg(ManagerBasedRLEnvCfg):
         self.episode_length_s = 15.0
         # simulation settings
         self.sim.dt = 0.0167  # 60Hz
-        self.sim.render_interval = 3
+        self.sim.render_interval = 1
 
         self.sim.physx.bounce_threshold_velocity = 0.2
         self.sim.physx.bounce_threshold_velocity = 0.01

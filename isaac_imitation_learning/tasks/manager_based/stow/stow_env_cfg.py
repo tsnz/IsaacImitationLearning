@@ -76,7 +76,7 @@ class ObjectTableBinSceneCfg(InteractiveSceneCfg):
     plane = AssetBaseCfg(
         prim_path="/World/GroundPlane",
         init_state=AssetBaseCfg.InitialStateCfg(pos=[0, 0, -1.05]),
-        spawn=GroundPlaneCfg(size=[5, 5]),
+        spawn=GroundPlaneCfg(size=[200, 200]),
     )
 
     # lights
@@ -155,7 +155,8 @@ class TerminationsCfg:
 
     # bin internal dimensions x: 0.18, y: 0.26, z: 0.14
     success = DoneTerm(
-        func=mdp.object_in_bin, params={"finish_range": {"x": (-0.08, 0.08), "y": (-0.12, 0.12), "z": (-0.07, 0.075)}}
+        func=mdp.object_in_bin,
+        params={"finish_range": {"x": (-0.08, 0.08), "y": (-0.12, 0.12), "z": (-0.07, 0.075)}},  # 0.09
     )
 
 

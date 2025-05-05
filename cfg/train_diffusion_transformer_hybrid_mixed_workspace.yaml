@@ -1,9 +1,9 @@
 defaults:
   - _self_
-  - task: lift_cube_depth_isaac
+  - task: lift_cube_image_isaac
 
-name: train_diffusion_unet_isaac
-_target_: diffusion_policy.workspace.train_diffusion_unet_image_workspace.TrainDiffusionUnetImageWorkspace
+name: train_diffusion_transformer_hybrid
+_target_: diffusion_policy.workspace.train_diffusion_transformer_hybrid_workspace.TrainDiffusionTransformerHybridWorkspace
 
 task_name: ${task.name}
 task_project: ${task.project}
@@ -12,17 +12,16 @@ exp_name: "default"
 topk: ${task.topk}
 device: "cuda:0"
 
-horizon: 16
+horizon: 10
 n_obs_steps: 2
 n_action_steps: 8
 n_latency_steps: 0
 dataset_obs_steps: ${n_obs_steps}
-past_action_visible: False
 keypoint_visible_rate: 1.0
-obs_as_global_cond: True
+obs_as_cond: True
 
 policy:
-  _target_: diffusion_policy.policy.diffusion_unet_image_policy.DiffusionUnetImagePolicy
+  _target_: isaac_imitation_learning.robodiff.policy.diffusion_transformer_hybrid_mixed_policy.DiffusionTransformerHybridMixedPolicy
 
   shape_meta: ${shape_meta}
   
@@ -36,41 +35,24 @@ policy:
     clip_sample: True # required when predict_epsilon=False
     prediction_type: epsilon # or sample
 
-  # added support for depth input using 1 input channel
-  obs_encoder:
-    _target_: isaac_imitation_learning.robodiff.model.vision.multi_dim_obs_encoder.MultiDimObsEncoder
-    shape_meta: ${shape_meta}
-    rgb_model:
-      _target_: diffusion_policy.model.vision.model_getter.get_resnet
-      name: resnet18
-      weights: null
-    depth_model:
-      _target_: isaac_imitation_learning.robodiff.model.vision.model_getter.get_resnet
-      name: resnet18
-      weights: null      
-      input_channel: 1        
-    resize_shape: null
-    crop_shape: [112, 112]
-    # constant center crop
-    random_crop: True
-    use_group_norm: True
-    share_rgb_model: False
-    share_depth_model: False
-    imagenet_norm: True    
-
   horizon: ${horizon}
   n_action_steps: ${eval:'${n_action_steps}+${n_latency_steps}'}
   n_obs_steps: ${n_obs_steps}
   num_inference_steps: 100
-  obs_as_global_cond: ${obs_as_global_cond}  
-  # reduced to run on 10GB GPU
-  # diffusion_step_embed_dim: 128
-  diffusion_step_embed_dim: 256
-  # down_dims: [512, 1024, 2048]
-  down_dims: [256,512,1024]
-  kernel_size: 5
-  n_groups: 8
-  cond_predict_scale: True
+
+  crop_shape: [112, 112]
+  obs_encoder_group_norm: True
+  eval_fixed_crop: True
+
+  n_layer: 8
+  n_cond_layers: 0  # >0: use transformer encoder for cond, otherwise use MLP
+  n_head: 4
+  n_emb: 256
+  p_drop_emb: 0.0
+  p_drop_attn: 0.3
+  causal_attn: True
+  time_as_cond: True # if false, use BERT like encoder only arch, time as input
+  obs_as_cond: ${obs_as_cond}
 
   # scheduler.step params
   # predict_epsilon: True
@@ -85,24 +67,23 @@ ema:
 
 dataloader:
   batch_size: 64
-  num_workers: 4
+  num_workers: 8
   shuffle: True
   pin_memory: True
   persistent_workers: False
 
 val_dataloader:
   batch_size: 64
-  num_workers: 4
+  num_workers: 8
   shuffle: False
   pin_memory: True
   persistent_workers: False
 
 optimizer:
-  _target_: torch.optim.AdamW
-  lr: 1.0e-4
-  betas: [0.95, 0.999]
-  eps: 1.0e-8
-  weight_decay: 1.0e-6
+  transformer_weight_decay: 1.0e-3
+  obs_encoder_weight_decay: 1.0e-6
+  learning_rate: 1.0e-4
+  betas: [0.9, 0.95]
 
 training:
   device: ${device}
@@ -111,17 +92,17 @@ training:
   resume: True
   # optimization
   lr_scheduler: cosine
-  lr_warmup_steps: 500
-  num_epochs: 101
+  # Transformer needs LR warmup
+  lr_warmup_steps: 1000
+  num_epochs: 400
   gradient_accumulate_every: 1
   # EMA destroys performance when used with BatchNorm
   # replace BatchNorm with GroupNorm.
   use_ema: True
-  freeze_encoder: False
   # training loop control
   # in epochs
-  rollout_every: 10
-  checkpoint_every: 10
+  rollout_every: 50
+  checkpoint_every: 50
   val_every: 1
   sample_every: 5
   # steps per epoch
@@ -133,7 +114,7 @@ training:
 logging:
   project: ${task_project}
   resume: True
-  mode: online  
+  mode: online
   name: ${name}_${task_name}_${now:%Y.%m.%d-%H.%M.%S}
   tags: ["${name}", "${task_name}", "${exp_name}"]
   id: null

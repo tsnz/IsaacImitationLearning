@@ -2,6 +2,9 @@
 This repo provides the tools to capture demonstrations in IsaacLab, as well as train a robot using the collected demonstrations. Demonstrations can be collected using different means, for example keyboard, gamepad or a MetaQuest 3 headset. The imitation learning part focuses mainly on diffusion.
 
 ## Requirements
+
+This repo uses [Git LFS](https://git-lfs.com/) to store usd assets and the corresponding textures.
+
 - Needed
     - Python 3.10
     - IsaacSim >= 4.5
@@ -137,3 +140,6 @@ python play.py --checkpoint [MODEL_CKPT_PATH] --num_envs 4 --num_rollouts 2
 ```
 
 The second option allows overwriting certain settings which are fixed when rerunning the rollout.
+
+### Docker
+For information about using Docker or other containers see [Docker](docker/readme.md)

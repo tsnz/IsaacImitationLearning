@@ -85,5 +85,3 @@ class FrankaLiftEnvCamCfg:
         )
 
         self.rerender_on_reset = True
-        # needed so image sensors run at full sim rate
-        self.sim.render_interval = 1

@@ -18,7 +18,7 @@ class IsaacLabImageWrapper(gym.Wrapper):
             val = raw_obs[key]
             type = attr.get("type", "low_dim")
             if type == "rgb" or type == "depth":
-                val = torch.moveaxis(val, -1, 2)
+                val = torch.moveaxis(val, -1, -3)
             if type == "rgb":
                 val = val / 255.0
             obs[key] = val

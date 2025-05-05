@@ -20,7 +20,7 @@ if TYPE_CHECKING:
     import torch
     from isaaclab.envs import ManagerBasedRLEnv
 
-from .observations import object_position_in_robot_root_frame
+from isaac_imitation_learning.tasks.mdp import object_position_in_robot_root_frame
 
 
 def object_reached_goal(
@@ -34,14 +34,11 @@ def object_reached_goal(
     Args:
         env: The environment.
         command_name: The name of the command that is used to control the object.
-        threshold: The threshold for the object to reach the goal position. Defaults to 0.02.
+        threshold: The threshold height for the object to reach the goal position. Defaults to 0.35.
         robot_cfg: The robot configuration. Defaults to SceneEntityCfg("robot").
         object_cfg: The object configuration. Defaults to SceneEntityCfg("object").
 
     """
-    # extract the used quantities (to enable type-hinting)
-    # robot: RigidObject | RigidObject = env.scene[robot_cfg.name]
-    # object: RigidObject | RigidObject = env.scene[object_cfg.name]
     obj_pos = object_position_in_robot_root_frame(env=env, robot_cfg=robot_cfg, object_cfg=object_cfg)
     # rewarded if the object is lifted above the threshold
     return obj_pos[:, 2] > threshold

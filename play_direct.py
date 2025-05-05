@@ -20,7 +20,7 @@ parser.add_argument("--task", type=str, default=None, help="Overwrite model task
 parser.add_argument("--checkpoint", type=str, default=None, help="Pytorch model checkpoint to load.")
 parser.add_argument("--horizon", type=int, default=300, help="Step horizon of each rollout.")
 parser.add_argument("--num_rollouts", type=int, default=1, help="Number of rollouts.")
-parser.add_argument("--seed", type=int, default=101, help="Random seed.")
+parser.add_argument("--seed", type=int, default=102, help="Random seed.")
 parser.add_argument("--num_envs", type=int, default=1, help="Number of parallel environments.")
 parser.add_argument(
     "--num_success_steps",
@@ -56,8 +56,12 @@ if TYPE_CHECKING:
     from diffusion_policy.workspace.base_workspace import BaseWorkspace
 
 
-def rollout(policy, env, horizon, abs_action, success_term, num_success_steps):
+def rollout(policy, env, horizon, abs_action, num_success_steps):
     obs = env.reset()
+
+    obs_buffer = {}
+    for term in obs:
+        obs_buffer[term] = torch.stack([obs[term], obs[term]], dim=1)
 
     step = 0
     success_counter = 0
@@ -66,7 +70,7 @@ def rollout(policy, env, horizon, abs_action, success_term, num_success_steps):
 
     while step < horizon and not torch.all(done):
         # device transfer
-        obs_dict = dict_apply(obs, lambda x: x.to(device=policy.device))
+        obs_dict = dict_apply(obs_buffer, lambda x: x.to(device=policy.device))
 
         # run policy
         with torch.no_grad():
@@ -93,12 +97,15 @@ def rollout(policy, env, horizon, abs_action, success_term, num_success_steps):
             obs, rewards, terminations = env.step(act)
             done = torch.logical_or(done, terminations)
 
-            if success_term is not None:
-                success_state = success_term.func(env.unwrapped, **success_term.params)
-                success_steps = (success_steps + 1) * success_state
-                success = success_steps >= num_success_steps
-                done = torch.logical_or(done, success)
-                success_counter += success_state.sum()
+            for term in obs:
+                obs_buffer[term][:, 1] = obs_buffer[term][:, 0]
+                obs_buffer[term][:, 0] = obs[term]
+
+            success_state = env.unwrapped.get_success_state()
+            success_steps = (success_steps + 1) * success_state
+            success = success_steps >= num_success_steps
+            done = torch.logical_or(done, success)
+            success_counter += success.sum()
 
             step += 1
 
@@ -143,38 +150,19 @@ def main():
     # parse configuration
     # TODO: Check if task ID exists
     task = args_cli.task if args_cli.task is not None else cfg.task.task_id
-    env_cfg = parse_env_cfg(
-        task, device=args_cli.device, num_envs=args_cli.num_envs, use_fabric=not args_cli.disable_fabric
-    )
-
-    # Set observations to dictionary mode for Robomimic
-    env_cfg.observations.policy.concatenate_terms = False
-
-    # Set termination conditions
-    env_cfg.terminations.time_out = None
-
-    # Disable recorder
-    env_cfg.recorders = None
-
-    # use history_length instead of a multi step wrapper
-    env_cfg.observations.policy.history_length = cfg.n_obs_steps
-    env_cfg.observations.policy.flatten_history_dim = False
+    env_cfg = parse_env_cfg(task, device=args_cli.device, num_envs=args_cli.num_envs)
 
     # env_cfg.viewer.eye = (1.3, 0, 0.4)
-    env_cfg.viewer.resolution = (1920, 1080)
+    # env_cfg.viewer.resolution = (1920, 1080)
 
     # Set seed
     torch.manual_seed(args_cli.seed)
     env_cfg.seed = args_cli.seed
 
-    # extract success checking function to invoke during rollout
-    success_term = None
-    if hasattr(env_cfg.terminations, "success"):
-        success_term = env_cfg.terminations.success
-        env_cfg.terminations.success = None
+    env_cfg.disable_success_reset = True
 
     # Create environment
-    env = gym.make(task, cfg=env_cfg, render_mode="rgb_array").unwrapped
+    env = gym.make(task, cfg=env_cfg, render_mode="rgb_array")
 
     env = gym.wrappers.RecordVideo(env, video_folder="/home/timo/", video_length=200, disable_logger=True, fps=30)
 
@@ -188,9 +176,10 @@ def main():
     policy.eval()
 
     # Run policy
+
     success = 0
     for trial in range(args_cli.num_rollouts):
-        success += rollout(policy, env, args_cli.horizon, cfg.task.abs_action, success_term, args_cli.num_success_steps)
+        success += rollout(policy, env, args_cli.horizon, cfg.task.abs_action, args_cli.num_success_steps)
 
     env.close()
 

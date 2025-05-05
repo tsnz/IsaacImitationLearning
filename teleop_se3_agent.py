@@ -61,7 +61,7 @@ import gymnasium as gym
 import omni.log  # noqa: F401
 import torch
 from isaaclab.devices import Se3Gamepad, Se3HandTracking, Se3Keyboard, Se3SpaceMouse
-from isaaclab.envs import ViewerCfg
+from isaaclab.envs import DirectRLEnvCfg, ManagerBasedEnvCfg, ViewerCfg
 from isaaclab.envs.ui import ViewportCameraController
 from isaaclab.managers import EventTermCfg as EventTerm
 from isaaclab_tasks.utils import parse_env_cfg
@@ -133,7 +133,10 @@ def main():
     # modify configuration
 
     # remove timeout
-    env_cfg.terminations.time_out = None
+    if isinstance(env_cfg, DirectRLEnvCfg):
+        env_cfg.disable_timeout_reset = True
+    elif isinstance(env_cfg, ManagerBasedEnvCfg):
+        env_cfg.terminations.time_out = None
 
     # reset teleop if env is reset
     def teleop_reset(env, env_ids):
@@ -184,7 +187,7 @@ def main():
         teleop_interface.add_callback("RESET", reset_recording_instance)
         viewer = ViewerCfg(eye=(-0.25, -0.3, 0.5), lookat=(0.6, 0, 0), asset_name="viewer")
         ViewportCameraController(env, viewer)
-    elif args_cli.teleop_device.lower() == "simpub":        
+    elif args_cli.teleop_device.lower() == "simpub":
         teleop_interface = Se3SimPubHandTrackingRel(
             pos_sensitivity=(args_cli.sensitivity / env_cfg.decimation),
             rot_sensitivity=(args_cli.sensitivity / env_cfg.decimation),

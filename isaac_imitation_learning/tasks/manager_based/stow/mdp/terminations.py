@@ -50,6 +50,4 @@ def object_in_bin(
     success = torch.logical_and(in_x_range, in_y_range)
     success = torch.logical_and(success, in_z_range)
 
-    # print(object_pos_in_bin_frame)
-
     return success

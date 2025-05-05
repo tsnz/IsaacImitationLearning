@@ -81,13 +81,12 @@ import contextlib
 import time
 
 import gymnasium as gym
-import omni.log
+import omni.log  # noqa: F401
 import torch
 from isaaclab.devices import Se3Gamepad, Se3HandTracking, Se3Keyboard, Se3SpaceMouse
-from isaaclab.envs import ManagerBasedEnvCfg, ViewerCfg
-from isaaclab.envs.mdp.recorders.recorders_cfg import ActionStateRecorderManagerCfg
+from isaaclab.envs import DirectRLEnvCfg, ViewerCfg
 from isaaclab.envs.ui import ViewportCameraController
-from isaaclab.managers import EventTermCfg as EventTerm
+from isaaclab.utils.datasets import EpisodeData, HDF5DatasetFileHandler
 from isaaclab_tasks.utils.parse_cfg import parse_env_cfg
 
 import isaac_imitation_learning.tasks  # noqa: F401
@@ -127,6 +126,30 @@ class RateLimiter:
                 self.last_time += self.sleep_duration
 
 
+def add_to_episode(key: str, value: torch.Tensor | dict, episode: EpisodeData):
+    """Adds the given key-value pair to the episodes for the given environment ids.
+
+    Args:
+        key: The key of the given value to be added to the episodes. The key can contain nested keys
+            separated by '/'. For example, "obs/joint_pos" would add the given value under ['obs']['policy']
+            in the underlying dictionary in the episode data.
+        value: The value to be added to the episodes. The value can be a tensor or a nested dictionary of tensors.
+            The shape of a tensor in the value is (env_ids, ...).
+        env_ids: The environment ids. Defaults to None, in which case all environments are considered.
+    """
+
+    # resolve environment ids
+    if key is None:
+        return
+
+    if isinstance(value, dict):
+        for sub_key, sub_value in value.items():
+            add_to_episode(f"{key}/{sub_key}", sub_value, episode)
+        return
+
+    episode.add(key, value[0])
+
+
 def pre_process_actions(delta_pose: torch.Tensor, gripper_command: bool) -> torch.Tensor:
     """Pre-process actions for the environment."""
     # resolve gripper command
@@ -148,7 +171,6 @@ def main():
 
     # get directory path and file name (without extension) from cli arguments
     output_dir = os.path.dirname(args_cli.dataset_file)
-    output_file_name = os.path.splitext(os.path.basename(args_cli.dataset_file))[0]
 
     # create directory if it does not exist
     if not os.path.exists(output_dir):
@@ -156,37 +178,14 @@ def main():
 
     # parse configuration
     env_cfg = parse_env_cfg(task_name=args_cli.task, device=args_cli.device, num_envs=1)
-    assert isinstance(env_cfg, ManagerBasedEnvCfg), "For recording direct env demos use record_direct_demos.py"
+    assert isinstance(env_cfg, DirectRLEnvCfg), "For recording manager env demos use record_demos.py"
     env_cfg.env_name = args_cli.task
 
     env_cfg.seed = args_cli.seed
 
-    # extract success checking function to invoke in the main loop
-    success_term = None
-    if hasattr(env_cfg.terminations, "success"):
-        success_term = env_cfg.terminations.success
-        env_cfg.terminations.success = None
-    else:
-        omni.log.warn(
-            "No success termination term was found in the environment."
-            " Will not be able to mark recorded demos as successful."
-        )
-
-    # modify configuration such that the environment runs indefinitely until
-    # the goal is reached or other termination conditions are met
-    env_cfg.terminations.time_out = None
-
-    env_cfg.observations.policy.concatenate_terms = False
-
-    env_cfg.recorders = ActionStateRecorderManagerCfg()
-    env_cfg.recorders.dataset_export_dir_path = output_dir
-    env_cfg.recorders.dataset_filename = output_file_name
-
-    # reset teleop if env is reset
-    def teleop_reset(env, env_ids):
-        teleop_interface.reset()
-
-    env_cfg.events.reset_teleop = EventTerm(func=teleop_reset, mode="reset")
+    # disable success checking function to invoke in the main loop
+    env_cfg.disable_success_reset = True
+    env_cfg.disable_timeout_reset = True
 
     # create environment
     env = gym.make(args_cli.task, cfg=env_cfg).unwrapped
@@ -238,8 +237,17 @@ def main():
 
     print(teleop_interface)
 
+    # setup recording
+    output_file = HDF5DatasetFileHandler()
+    output_file.create(args_cli.dataset_file, env_cfg.env_name)
+
     # reset before starting
-    env.reset()
+    obs = env.reset()[0]["policy"]
+    episode_data = EpisodeData()
+    initial_state = env.get_env_state(0)
+    add_to_episode("initial_state", initial_state, episode_data)
+
+    env.reset_to(episode_data.get_initial_state(), torch.tensor([0], device=env.device), is_relative=True)
 
     # simulate environment -- run everything in inference mode
     current_recorded_demo_count = 0
@@ -252,42 +260,37 @@ def main():
             delta_pose = torch.tensor(delta_pose, dtype=torch.float, device=env.device).repeat(env.num_envs, 1)
             # compute actions based on environment
             actions = pre_process_actions(delta_pose, gripper_command)
+            add_to_episode("obs", obs, episode_data)
+            add_to_episode("actions", actions, episode_data)
 
             # perform action on environment
             # TODO: Support for envs not using full range of SE3 input
-            env.step(actions)
+            obs = env.step(actions)[0]["policy"]
 
-            if success_term is not None:
-                if bool(success_term.func(env, **success_term.params)[0]):
-                    success_step_count += 1
-                    if success_step_count >= args_cli.num_success_steps:
-                        env.recorder_manager.record_pre_reset([0], force_export_or_skip=False)
-                        env.recorder_manager.get_episode(0).seed = args_cli.seed
-                        env.recorder_manager.set_success_to_episodes(
-                            [0],
-                            torch.tensor([[True]], dtype=torch.bool, device=env.device),
-                        )
-                        env.recorder_manager.export_episodes([0])
-                        should_reset_recording_instance = True
-                else:
-                    success_step_count = 0
-
-            if should_reset_recording_instance:
-                env.recorder_manager.reset()
-                env.reset()
-                should_reset_recording_instance = False
+            success = env.get_success_state()
+            if bool(success):
+                success_step_count += 1
+                if success_step_count >= args_cli.num_success_steps:
+                    episode_data.seed = args_cli.seed
+                    episode_data.success = True
+                    output_file.write_episode(episode_data)
+                    current_recorded_demo_count += 1
+                    should_reset_recording_instance = True
+            else:
                 success_step_count = 0
 
-            # print out the current demo count if it has changed
-            if env.recorder_manager.exported_successful_episode_count > current_recorded_demo_count:
-                current_recorded_demo_count = env.recorder_manager.exported_successful_episode_count
-                print(f"Recorded {current_recorded_demo_count} successful demonstrations.")
+            if should_reset_recording_instance:
+                obs = env.reset()[0]["policy"]
+                teleop_interface.reset()
+                episode_data = EpisodeData()
+                should_reset_recording_instance = False
+                initial_state = env.get_env_state(0)
+                add_to_episode("initial_state", initial_state, episode_data)
 
-            if args_cli.num_demos > 0 and env.recorder_manager.exported_successful_episode_count >= args_cli.num_demos:
+            if args_cli.num_demos > 0 and current_recorded_demo_count >= args_cli.num_demos:
                 print(f"All {args_cli.num_demos} demonstrations recorded. Exiting the app.")
                 break
 
-            # check that simulation is stopped or not
             if env.sim.is_stopped():
                 break
 
@@ -295,6 +298,8 @@ def main():
                 rate_limiter.sleep(env)
 
     env.close()
+    output_file.flush()
+    output_file.close()
 
 
 if __name__ == "__main__":

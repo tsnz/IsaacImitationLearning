@@ -1,11 +1,11 @@
-name: stow_teddy_mixed_isaac
+name: stow_teddy_depth_isaac
 
 shape_meta:
   # acceptable types: rgb, low_dim
   obs:
-    agentview_image:
-      shape: [3, 128, 128]
-      type: rgb
+    agentview_depth:
+      shape: [1, 128, 128]
+      type: depth
     robot0_eef_depth:
       shape: [1, 128, 128]
       type: depth
@@ -47,7 +47,7 @@ env_runner:
   n_test_vis: 3
   test_seed: 100000
   # use python's eval function as resolver, single-quoted string as argument
-  max_steps: ${eval:'400 if "${task.dataset_type}" == "mh" else 300'}
+  max_steps: ${eval:'600 if "${task.dataset_type}" == "mh" else 450'}
   n_obs_steps: ${n_obs_steps}
   n_action_steps: ${n_action_steps}
   render_video: True

@@ -23,7 +23,7 @@ parser.add_argument(
     default=[],
     help="A list of episode indices to be replayed. Keep empty to replay all in the dataset file.",
 )
-parser.add_argument("--dataset_file", type=str, default="datasets/dataset.hdf5", help="Dataset file to be replayed.")
+parser.add_argument("--dataset_file", type=str, default="data/dataset.hdf5", help="Dataset file to be replayed.")
 parser.add_argument(
     "--validate_states",
     action="store_true",
@@ -53,6 +53,7 @@ import time
 import gymnasium as gym
 import torch
 from isaaclab.devices import Se3Keyboard
+from isaaclab.envs import DirectRLEnvCfg, ManagerBasedEnvCfg
 from isaaclab.utils.datasets import EpisodeData, HDF5DatasetFileHandler
 from isaaclab_tasks.utils.parse_cfg import parse_env_cfg
 
@@ -166,8 +167,12 @@ def main():
         env_cfg.seed = int(episode_data.seed)
 
     # Disable all recorders and terminations
-    env_cfg.recorders = {}
-    env_cfg.terminations = {}
+    if isinstance(env_cfg, ManagerBasedEnvCfg):
+        env_cfg.recorders = {}
+        env_cfg.terminations = {}
+    elif isinstance(env_cfg, DirectRLEnvCfg):
+        env_cfg.disable_success_reset = True
+        env_cfg.disable_timeout_reset = True
 
     # create environment from loaded config
     env = gym.make(env_name, cfg=env_cfg).unwrapped
